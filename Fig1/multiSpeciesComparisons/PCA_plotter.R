@@ -1,18 +1,38 @@
 # PCA plotter
 
+# this script is designed to plot each species repeat distributions as a pca biplot
+
+# it also plots human replication timing too
+
 
 rm(list = ls())
-load("~/Desktop/Domain_manuscript/R_objects/PCA_species")
+
+setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation/")
+
+# load PCA data from step1
+load("../accesoryFiles/R_objects/PCA_species")
+
+"path to replication timing data downloaded as per sup material"
+replicationDataPath = "../accesoryFiles/Data/UW_repliSeq/"
 
 
-source(file="~/Desktop/Domain_manuscript/Domain_manuscript_scripts/functions.R")
+# path to output plot
+plotPath = "../plots/Fig1/"
+
+
+#plot name
+plotName = "PCAspec.pdf"
+plotNameReplicationTiming = "Human_repli_pca.pdf"
+
+
+source(file="baseScripts/functions.R")
 library(GenomicRanges)
 library(rtracklayer)
 library(circlize)
 
 
 
-pdf(file="~/Desktop/Domain_manuscript/plots/Fig1/PCA_wiggle/PCAspec.pdf", onefile = T, height = 5,width = 5)
+pdf(file=paste(plotPath,plotName, sep = ""), onefile = T, height = 5,width = 5)
 
 layout(matrix(c(1,2,3,4), nrow = 2))
 par(mar=c(2,2,2,2))
@@ -98,7 +118,6 @@ axis(side = 2,c(-5,0,5))
 dev.off()
 
 
-#pdf(file = "~/Desktop/Domain_manuscript/plots/Fig1/PCA_wiggle/PCAhuman.pdf", height = 5, width = 5)
 
 
 
@@ -111,7 +130,9 @@ nos <- (1:nrow(A))[A$chr != "chrY"]
 which <- GRanges(seqnames=Rle(HumanPCA$binInfo$chr[nos]), 
                    ranges=IRanges(start = HumanPCA$binInfo$start[nos], end = HumanPCA$binInfo$end[nos])
 )
-repliTime <- import("~/Desktop/Domain_manuscript/Data/UW_repliSeq/wgEncodeUwRepliSeqHuvecWaveSignalRep1.bigWig", format = "bw", which = which)
+repliTime <- import(paste(replicationDataPath,"wgEncodeUwRepliSeqHuvecWaveSignalRep1.bigWig", sep = ""), format = "bw", which = which)
+
+
 
 ol <- as.matrix(findOverlaps(which, repliTime))
 ol.agg <- aggregate(x = elementMetadata(repliTime)$score[ol[,2]], by = list(ol[,1]), FUN=mean)
@@ -121,8 +142,7 @@ f = colorRamp2(breaks = c((min((ol.agg$x))), mean((ol.agg$x)), max(abs(ol.agg$x)
 ycol <- c(rep("aquamarine3", 3), rep("red", 4), rep("purple", 4), rep("darkblue", 2))
 
 
-
-pdf(file = "~/Desktop/Domain_manuscript/plots/Fig1/Human_repli_pca.pdf", onefile = T, width = 5, height = 5)
+pdf(file = paste(plotPath,plotNameReplicationTiming, sep = ""), onefile = T, width = 5, height = 5)
 
 layout(matrix(c(1,2,3,4), nrow = 2))
 par(mar=c(2,2,2,2))
@@ -169,7 +189,7 @@ dev.off()
 
 
 
-pdf(file = "~/Desktop/Domain_manuscript/plots/Fig1/PCA_wiggle/legends.pdf")
+pdf(file = paste(plotPath, "legends.pdf", sep = ""))
 layout(c(1,2))
 par(mar=c(13,15,3,15))
 image(t(matrix(1:5, nrow=1)),col=f( seq(min(ol.agg$x),  max(ol.agg$x)) ),   xaxt = "n", yaxt = "n")
@@ -183,10 +203,6 @@ legend("center", c("old LINE","new LINE", "ancestral", "new SINE"), fill = c("re
 legend("bottom", c("old LINE","new LINE", "ancestral", "new SINE"), fill = c("red","purple", "darkblue", "aquamarine3"),horiz = T)
 
 dev.off()
-
-
-
-# I think mouse needs to be turned around 
 
 
 

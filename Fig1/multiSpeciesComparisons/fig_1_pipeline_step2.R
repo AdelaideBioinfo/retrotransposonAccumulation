@@ -1,12 +1,26 @@
 
+# This script is designed to take processed repeat data from step 1 and map each species' genome to human
+# For this script to work the headers from net AXT alignmnets need to be inside a file named refSepcies.queSpecie.axt.txt 
+# where refSpecies needs to be the genome name for the reference species and queSpecies needs to be the genome name for the query species.
+# eg. for human and chimp "hg19.panTro4.axt.txt"
+
 
 rm(list = ls())
 
 library(GenomicRanges)
 
-load("~/Desktop/Domain_manuscript/R_objects/PCA_species")
-load("~/Desktop/Domain_manuscript/R_objects/Rep_info_species")
-source(file="~/Desktop/Domain_manuscript/Domain_manuscript_scripts/functions.R")
+
+setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation/")
+
+# load output from step one
+load("../accesoryFiles/R_objects/PCA_species")
+load("../accesoryFiles/R_objects/Rep_info_species")
+source("baseScripts/functions.R")
+
+# output dir
+R_objectPath <- "../accesoryFiles/R_objects/"
+
+
 
 ### Our functions will only work in the correct environmnet
 referenceDF <- data.frame(spec = "Human", genome = "hg19")
@@ -21,7 +35,7 @@ for(i in 1:nrow(speciesDF)){
   refSpec <- referenceDF$spec[1]
   queSpec <- speciesDF$spec[i]
   
-  align <- removeRepAlign(refSpecGenome=refSpecGenome, queSpecGenome=queSpecGenome, refSpec=refSpec, queSpec=queSpec)
+  align <- removeRepAlign(refSpecGenome=refSpecGenome, queSpecGenome=queSpecGenome, refSpec=refSpec, queSpec=queSpec, alignPath = "../accesoryFiles/Data/usable_alignmnet/")
   # now that i can remove the repeats all i have to do is get the bin map 
   align2 <- isolateBinAlign(align=align,refSpec=refSpec,queSpec=queSpec)
   binMap <- buildBinMap(align=align2,refSpec=refSpec, queSpec=queSpec)
@@ -33,29 +47,5 @@ for(i in 1:nrow(speciesDF)){
 }
 
 saveList <- c(paste(referenceDF$spec[1], "Ref_", speciesDF$spec, "Que", sep = ""))
-save(list=saveList, file="~/Desktop/Domain_manuscript/R_objects/binMaps")
-
-
-
-# have a series of alignemnts thta can be used to map bins !!!
-# the alignments shouldn't interfare with the bin boundries
-# intersect and find the overlaps or just find Ols because boundries are resolved. 
-
-# still Not sure if I should go back and remove the chromosomes that are unplaced across all species and start again
-
-
-
-
-# now we roughly know which bins are next to each other and the bp number overlap get the bin number for each 
-# calculate the fraction 
-# then join them up 
-
-
-# somthing is going on
-# we are getting alignments ro a bin that are bigger than 1000000 bp
-
-
-
-# this way we know whihc entries belong where
-
+save(list=saveList, file=paste(R_objectPath,"binMaps", sep = ""))
 
