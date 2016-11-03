@@ -1,20 +1,30 @@
 
+# this script is designed to readin a series of replication domain datasets and identify constiuative domains
+# the script also prints our summary plots comparing the intergenic and intronic interval sizes captured in the 
+# constiuative domain dataset
+
+
 rm(list = ls())
-setwd("~/Desktop/Domain_manuscript/")
+
+setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation/")
 library(GenomicRanges)
 library(rtracklayer)
 
-
-source("Domain_manuscript_scripts/functions.R")
-source("Domain_manuscript_scripts/rep_db.R")
+source("baseScripts/functions.R")
+source("baseScripts/rep_db.R")
 #load("R_objects/chromStateCombined")
-
 
 genome = "hg19"
 spec1 = "Human"
 
+# path to Replication Domain files
+RDpath <- "../accesoryFiles/Data/DNN_HMM_repliDomains/"
 
+# plot path 
+plotPath <- "../plots/supFigs/replicationDomainCons/"
 
+# data output
+outputPath <- "../accesoryFiles/Data/"
 
 bins <- binned.genome.reader(genome = "hg19", bin.size = c(1000), keep.rate = 0)
 bins <- bins[[1]]
@@ -23,11 +33,11 @@ bins.gr <- GRanges(seqnames = Rle(bins$chr),
                    ranges = IRanges(start = bins$start, end = bins$end))
 
 
-timeFiles <- list.files(path = "Data/DNN_HMM_repliDomains/")
+timeFiles <- list.files(path = RDpath)
 sampNames <- NULL
 for( i in 1:length(timeFiles)){
   name <- paste(strsplit(timeFiles[i],"_")[[1]][3],strsplit(timeFiles[i],"_")[[1]][4] , sep = "_")
-  ranges <- read.table(paste("Data/DNN_HMM_repliDomains/", timeFiles[i], sep =""))
+  ranges <- read.table(paste(RDpath, timeFiles[i], sep =""))
   ranges.gr <- GRanges(seqnames = Rle(ranges[,1]),
                        ranges = IRanges(start = ranges[,2], end = ranges[,3]))
   ol <- as.matrix(findOverlaps(bins.gr, ranges.gr, type = c("within")))
@@ -130,19 +140,21 @@ allRange <- rbind(allRange, ranges)
 allRangeE <- rbind(allRangeE, ranges[ranges$domain == "ERD",])
 allRangeL <- rbind(allRangeL, ranges[ranges$domain == "LRD",])
 
-pdf(file ="plots/consituativeDomains/DomainSizes.pdf", width = 10, height =7)
-layout(matrix(c(1,2), nrow = 2))
-par(mar = c(2,5,8,5))
-boxplot(log10(allRangeE$end-allRangeE$start) ~ as.factor(allRangeE$sample), las = 2, varwidth = TRUE, notch = TRUE,
-        ylab = "domain size (log10 bp)", names = rep("", 17),ylim = c(3,8), main = "Replication Domain Size")
-axis(side = 4,at = 3 + ((8-3)/2), labels = "Early")
-par(mar = c(10,5,0,5))
-boxplot(log10(allRangeL$end-allRangeL$start) ~ as.factor(allRangeL$sample), las = 2, varwidth = TRUE, notch = TRUE,
-        ylab = "domain size (log10 bp)", ylim = c(3,8))
-axis(side = 4,at = 3 + ((8-3)/2), labels = "Late")
-mtext(text = "Sample", side = 1, line = 8, cex = 1.2)
-dev.off()
 
+#####
+# pdf(file ="plots/consituativeDomains/DomainSizes.pdf", width = 10, height =7)
+# layout(matrix(c(1,2), nrow = 2))
+# par(mar = c(2,5,8,5))
+# boxplot(log10(allRangeE$end-allRangeE$start) ~ as.factor(allRangeE$sample), las = 2, varwidth = TRUE, notch = TRUE,
+#         ylab = "domain size (log10 bp)", names = rep("", 17),ylim = c(3,8), main = "Replication Domain Size")
+# axis(side = 4,at = 3 + ((8-3)/2), labels = "Early")
+# par(mar = c(10,5,0,5))
+# boxplot(log10(allRangeL$end-allRangeL$start) ~ as.factor(allRangeL$sample), las = 2, varwidth = TRUE, notch = TRUE,
+#         ylab = "domain size (log10 bp)", ylim = c(3,8))
+# axis(side = 4,at = 3 + ((8-3)/2), labels = "Late")
+# mtext(text = "Sample", side = 1, line = 8, cex = 1.2)
+# dev.off()
+# 
 
 par(mar = c(5,5,5,5))
 
@@ -163,18 +175,18 @@ MostRangeL <- allRangeL[allRangeL$sample != "constitutive",]
 differencesALLL <- MostRangeL$start[2:nrow(MostRangeL)] - MostRangeL$end[1:(nrow(MostRangeL)-1)]
 
 
-pdf(file = "plots/consituativeDomains/distanceBetweenDomain.pdf")
-layout(matrix(c(1,2), nrow = 2))
-plot(density(log10(differencesE[differencesE > 0])), ylim = c(0,1.2), xlim = c(2,8),
-     main = "distances between adjacent early replicating domains", xlab = "distances (log10 bp)")
-lines(density(log10(differencesALLE[differencesALLE > 0 ])), col = 2)
-legend("topleft",legend = c("constitutive domains", "pooled domains"), fill = c(1,2))
-
-plot(density(log10(differencesL[differencesL > 0])), ylim = c(0,1.2), xlim = c(2,8),
-     main = "distances between adjacent late replicating domains", xlab = "distances (log10 bp)")
-lines(density(log10(differencesALLL[differencesALLL > 0 ])), col = 2)
-legend("topleft",legend = c("constitutive domains", "pooled domains"), fill = c(1,2))
-dev.off()
+# pdf(file = "plots/consituativeDomains/distanceBetweenDomain.pdf")
+# layout(matrix(c(1,2), nrow = 2))
+# plot(density(log10(differencesE[differencesE > 0])), ylim = c(0,1.2), xlim = c(2,8),
+#      main = "distances between adjacent early replicating domains", xlab = "distances (log10 bp)")
+# lines(density(log10(differencesALLE[differencesALLE > 0 ])), col = 2)
+# legend("topleft",legend = c("constitutive domains", "pooled domains"), fill = c(1,2))
+# 
+# plot(density(log10(differencesL[differencesL > 0])), ylim = c(0,1.2), xlim = c(2,8),
+#      main = "distances between adjacent late replicating domains", xlab = "distances (log10 bp)")
+# lines(density(log10(differencesALLL[differencesALLL > 0 ])), col = 2)
+# legend("topleft",legend = c("constitutive domains", "pooled domains"), fill = c(1,2))
+# dev.off()
 # the gaps between adjacent ranges 
 
 
@@ -281,12 +293,6 @@ ErdMerge <- merge(DFmergeEintergenic, DFmergeEintron, by.x = 1, by.y = 1)
 LrdMerge <- merge(DFmergeLintergenic, DFmergeLintron, by.x = 1, by.y = 1)
 DomainMerge <- merge(ErdMerge, LrdMerge, by.x = 1, by.y =1)
 
-# We've got a sample of 
-
-# basicly we want to know if we have stuff on the same order fo magnitude
-
-# Should we put this in a table 
-
 
 ordering <- boxplot(log10(IntergenicdfE$IntergenicBases) ~ IntergenicdfE$samples)
 orderNo <- order(ordering$stats[3,])
@@ -300,7 +306,7 @@ IntrondfL$samples <- factor(IntrondfL$samples,levels = orderName)
 IntrondfE$samples <- factor(IntrondfE$samples,levels = orderName)
 
 
-pdf(file = "plots/consituativeDomains/IntervalSizesInDomains.pdf", onefile = T, width = 10, height = 6)
+pdf(file = paste(plotPath,"IntervalSizesInDomains.pdf", sep = ""), onefile = T, width = 10, height = 6)
 
 
 layout(matrix(c(1,2,3,4), nrow = 4),heights = c(1,1,.6,1.75))
@@ -412,7 +418,7 @@ dev.off()
 
 
 
-write.table(x = rbind(domainRangesE,domainRangesL), file = "Data/ConsTimingDomains", quote = F, sep = "\t", row.names = F, col.names = T)
+write.table(x = rbind(domainRangesE,domainRangesL), file = paste(outputPath,"ConsTimingDomains", sep = ""), quote = F, sep = "\t", row.names = F, col.names = T)
 
 
 
