@@ -1,11 +1,9 @@
-# maybe we should look at somethign like enhacers and see what TE distribtuions are around them
+# this script takes repeat data and the open chromatin sites
+# it produces plots that show how retrotransposon accumulation interacts with open chromatin in 
+# ERDs and LRDs
+# it also produces uncorrected and corrected curves at open chromatin boundaires
 
-# it would be interesting to see if it behaves a certain way
-
-
-
-
-setwd("~/Desktop/Domain_manuscript/")
+setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation/")
 
 rm(list = ls())
 
@@ -15,10 +13,14 @@ library(rtracklayer)
 spec1 <- "Human"
 genome = "hg19"
 
+pathOpenChrom = "../accesoryFiles/Data/OpenChromSynth/"
+plotPathOpenChrom = "../plots/Fig2/"
+supFigPath = "../plots/supFigs/"
+RDpath = "../accesoryFiles/Data/ConsTimingDomains"
 
-source(file="~/Desktop/Domain_manuscript/Domain_manuscript_scripts/functions.R")
-source(file="~/Desktop/Domain_manuscript/Domain_manuscript_scripts/rep_db.R")
-load(file = "~/Desktop/Domain_manuscript/R_objects/chromStateCombined")
+source(file="baseScripts/functions.R")
+source(file="baseScripts/rep_db.R")
+#load(file = "~/Desktop/Domain_manuscript/R_objects/chromStateCombined")
 
 # so lets read in the whole genome and find a way to build the neighbormatrix
 
@@ -100,7 +102,7 @@ TPRTinsertNew_L1$genoStart[TPRTinsertNew_L1$strand == "+"] <- TPRTinsertNew_L1$g
 TPRTinsertNew_L1$genoEnd <- TPRTinsertNew_L1$genoStart + insertSize
 joinRep$TPRT <- TPRTinsertNew_L1
 
-domainRanges <- read.table("Data/ConsTimingDomains", header = T)
+domainRanges <- read.table(RDpath, header = T)
 domainRangesE <- domainRanges[domainRanges$domain == "ERD",]
 domainRangesL <- domainRanges[domainRanges$domain == "LRD",]
 
@@ -116,19 +118,12 @@ domainL.gr
 findOverlaps(domainE.gr,domainL.gr)
 
 
-# 
-# 
-# 
-# enhancers <- read.table("Data/FANTOM5/permissive_enhancers.bed.txt")
-# colnames(enhancers) <- c("chr", "start", "end", "name", "score", "strand", "thickStart", "thickEnd", "itemRgb", "blockCount", "blockSizes", "blockStarts")
-# enhancer.gr <- GRanges(seqnames = Rle(enhancers$chr),
-#                        ranges = IRanges(start = enhancers$start, end = enhancers$end))
 
 
-files <- list.files("Data/OpenChromSynth/")
+files <- list.files(pathOpenChrom)
 allOpen <- NULL
 for(i in 1:length(files)){
-  dat <- read.table(paste("Data/OpenChromSynth/",files[i], sep = ""))
+  dat <- read.table(paste(pathOpenChrom,files[i], sep = ""))
   dat[,22] <- as.factor(gsub("_[0-9]+","",dat[,4]))
   colnames(dat) <- c("chr", "start", "end", "hitTypeNumber", "score", "strand", "start2", "end2", "colour", "Pval",
                      "dnaseSig", "dnasePval", "faireSig", "fairePval", "polIISig", "polIIPval", "ctcfSig","ctcfPval","cmycSig", "cmycPval", "ocCode", "ocType")
@@ -183,14 +178,14 @@ Lactive <- hist(countOverlaps(openCellsL.gr,openCellBumpy.gr), breaks = seq(0,20
 EnonExonBases.gr <- intersect(nonExonRegion.gr,domainE.gr) 
 LnonExonBases.gr <- intersect(nonExonRegion.gr,domainL.gr) 
 
-pdf(file = "plots/TEopenChromInteract/clusters.pdf", height = 3.5,width = 2.5)
+pdf(file = paste(plotPathOpenChrom,"clusters.pdf", sep = ""), height = 3.5,width = 2.5)
 plot(Eactive$mids + .5, log2((Eactive$counts/sum(width(EnonExonBases.gr)))* (1*10^7)), col = 2,xlim = c(1,50), type = "l", 
      xlab = "DNase1 HS per cluster", ylab = "DNase1 clusters per 10 Mb", lwd = 3, yaxt = "n", ylim = c(-10,10))
-axis(side = 2, at = seq(-10,10, 5), labels = round(2^(seq(-10,10, 5)),2))
+axis(side = 2, at = seq(-10,10, 5), labels = round(2^(seq(-10,10, 5)),2), las = 2)
 lineG <- log2((Lactive$counts/sum(width(LnonExonBases.gr)))* (1*10^7))
 lineG[is.infinite(lineG)] <- -10
-lines(Lactive$mids + .5,lineG, col = 3, lwd = 3)
-legend("topright", legend = c("cERD", "cLRD"),title = "Domain", fill = c(2,3), bty = "n", cex = .7)
+lines(Lactive$mids + .5,lineG, col = "aquamarine3", lwd = 3)
+legend("topright", legend = c("cERD", "cLRD"),title = "Domain", fill = c("red","aquamarine3"), bty = "n", cex = .7)
 dev.off()
 # this shows how active each region is 
 
@@ -222,58 +217,18 @@ for(i in 1:4){
 }
 rownames(EcovTE) <- rownames(LcovTE) <- c("Alu", "new_L1", "old_L1", "Ancient")
 
-pdf(file = "plots/TEopenChromInteract/TEOLcluster.pdf", height = 7,width = 3.3)
+pdf(file = paste(plotPathOpenChrom, "TEOLcluster.pdf", sep = ""), height = 7,width = 3.3)
 layout(c(1,2))
 barplot(t(EcovTE),beside = T,space = c(0,.3), ylim = c(0,.23), 
-        col = c(rep("darkgreen",2), rep("purple", 2), rep("red", 2), rep("darkblue", 2)), 
+        col = c(rep("aquamarine3",2), rep("purple", 2), rep("red", 2), rep("darkblue", 2)), 
         density = c(-1,30), xaxt = "n", las = 2)
-legend("topright", legend = c("non exon", "DNase cluster"), density= c(-1,30), box.lwd = 0)
+legend("topright", legend = c("non exon", "DNase cluster"), density= c(-1,30), bty="n")
 barplot(t(LcovTE), beside = T, ylim = c(0,.23),space = c(0,.3), 
-        col = c(rep("darkgreen",2), rep("purple", 2), rep("red", 2), rep("darkblue", 2)), 
+        col = c(rep("aquamarine3",2), rep("purple", 2), rep("red", 2), rep("darkblue", 2)), 
         density = c(-1,30), las = 2)
 dev.off()
 
 
-# uncorrected levels
-layout(matrix(1:4,nrow = 2))
-
-layout(1)
-i = 5
-#for(i in 1:4){
-  
-  lenChoice = c(2000,10000,3000,3000, 5000)[i]
-  repChoice = c("Alu", "new_L1", "old_L1", "Ancient", "TPRT")[i]
-  
-
-  
-  TE.gr <- GRanges(seqnames = Rle(joinRep[[repChoice]]$genoName), 
-                   ranges = IRanges(start = joinRep[[repChoice]]$genoStart, end = joinRep[[repChoice]]$genoEnd))
-  
-  gapsOpenCellAll <- data.frame(chr = seqnames(gapsOpenCellAll.gr), start = start(gapsOpenCellAll.gr), end = end(gapsOpenCellAll.gr), Known = width(gapsOpenCellAll.gr))
-  gapsOpenCellAll[,repChoice] = countOverlaps(gapsOpenCellAll.gr, TE.gr)
-  resAll <- covCalcPlot(lenChoice = lenChoice, repChoice = repChoice, repBins = gapsOpenCellAll,repList = joinRep)
-  #plot(c(resAll$rawRepCov5/resAll$baseFreq5,resAll$rawRepCov3/resAll$baseFreq3), type = "l")
-  
-  gapsOpenCellE<- data.frame(chr = seqnames(gapsOpenCellE.gr), start = start(gapsOpenCellE.gr), end = end(gapsOpenCellE.gr), Known = width(gapsOpenCellE.gr))
-  gapsOpenCellE[,repChoice] = countOverlaps(gapsOpenCellE.gr, TE.gr)
-  resE <- covCalcPlot(lenChoice = lenChoice, repChoice = repChoice, repBins = gapsOpenCellE,repList = joinRep)
-  #plot(c(res$rawRepCov5/res$baseFreq5,res$rawRepCov3/res$baseFreq3), ylim = c(0,.2), type = "l")
-  
-  gapsOpenCellL<- data.frame(chr = seqnames(gapsOpenCellL.gr), start = start(gapsOpenCellL.gr), end = end(gapsOpenCellL.gr), Known = width(gapsOpenCellL.gr))
-  gapsOpenCellL[,repChoice] = countOverlaps(gapsOpenCellL.gr, TE.gr)
-  resL <- covCalcPlot(lenChoice = lenChoice, repChoice = repChoice, repBins = gapsOpenCellL,repList = joinRep)
-  #plot(c(res$rawRepCov5/res$baseFreq5,res$rawRepCov3/res$baseFreq3), ylim = c(0,.2), type = "l")
-  
-  
-  
-  plot(c(resAll$rawRepCov5/resAll$baseFreq5,resAll$rawRepCov3/resAll$baseFreq3), ylim = c(0,.001), type = "h", xaxt = "n",
-       xlab = "distance from enhancer (bp)", ylab = "repeat coverage", main = repChoice)
-  axis(side = 1,at = c(seq(lenChoice, 0,length.out = 5),seq(lenChoice, lenChoice*2,length.out = 5)), 
-       labels = c(seq(0, lenChoice,length.out = 5),seq(0, lenChoice,length.out = 5)))
-  lines(c(resE$rawRepCov5/resE$baseFreq5,resE$rawRepCov3/resE$baseFreq3), col = 2)
-  lines(c(resL$rawRepCov5/resL$baseFreq5,resL$rawRepCov3/resL$baseFreq3), col = 3)
-  
-#}
 
 
 # choose TE here
@@ -293,7 +248,7 @@ for(l in seq(0,20000,10)){
 
 
 for(i in 1:5){
-  TEcols = c("darkgreen", "purple", "red", "darkblue", "orange")[i]
+  TEcols = c("aquamarine3", "purple", "red", "darkblue", "orange")[i]
   repChoice = c("Alu", "new_L1", "old_L1", "Ancient", "TPRT")[i]
   TE.gr <- GRanges(seqnames = Rle(joinRep[[repChoice]]$genoName), 
                    ranges = IRanges(start = joinRep[[repChoice]]$genoStart, end = joinRep[[repChoice]]$genoEnd))
@@ -302,7 +257,7 @@ for(i in 1:5){
     
     gType = c("All","E", "L")[j]
     
-    pdf(file = paste("writing/round2_20160503/draftsTex/supmaterial/TexFigs/supFig/biasLine/dnase1/", repChoice,gType,"OpendnaseNonExon.pdf", sep = ""), height = 5, width = 5)
+    pdf(file = paste(supFigPath, "biasLine/dnase1/", repChoice,gType,"OpendnaseNonExon.pdf", sep = ""), height = 5, width = 5)
 
     gapDat.gr <- get(paste("gapsOpenCell", gType, ".gr", sep = ""))
     gapTable <- data.frame(chr = seqnames(gapDat.gr), start = start(gapDat.gr), end = end(gapDat.gr), Known = width(gapDat.gr))
@@ -387,85 +342,85 @@ for(i in 1:5){
 
 
 
-TEcols = c("darkgreen", "purple", "red", "darkblue", "orange")
+TEcols = c("aquamarine3", "purple", "red", "darkblue", "orange")
 for(j in 1:3){
-for(i in 1:4){
-  TEfam = c("Alu", "new_L1", "old_L1", "Ancient", "TPRT")[i]
-  lenChoice = c(2000,10000,3000,3000, 5000)[i]
-  gType = c("All", "E", "L")[j]
+  for(i in 1:4){
+    TEfam = c("Alu", "new_L1", "old_L1", "Ancient", "TPRT")[i]
+    lenChoice = c(2000,10000,3000,3000, 5000)[i]
+    gType = c("All", "E", "L")[j]
+    
+    TE.gr <- GRanges(seqnames = Rle(joinRep[[TEfam]]$genoName), 
+                     ranges = IRanges(start = joinRep[[TEfam]]$genoStart, end = joinRep[[TEfam]]$genoEnd))
+    
+    gapsOpen.gr  <- get(paste("gapsOpenCell", gType, ".gr", sep = ""))
+    
+    gapsOpen <- data.frame(chr = seqnames(gapsOpen.gr), start = start(gapsOpen.gr), end = end(gapsOpen.gr), Known = width(gapsOpen.gr))
+    gapsOpen[,TEfam] = countOverlaps(gapsOpen.gr, TE.gr)
+    
+    
+    posStatBins = gapsOpen
+    
+    TEs_posStats <- covCalcPlot(lenChoice = lenChoice, repChoice = TEfam, repBins = posStatBins,repList = joinRep)
+    
+    rawCov <- (TEs_posStats$rawRepCov3 + TEs_posStats$rawRepCov5[(lenChoice+1):1])
+    bpFreq <- (TEs_posStats$baseFreq3 + TEs_posStats$baseFreq5[(lenChoice+1):1])
+    bpFreq[is.na(bpFreq)] <- 1
+    
+    rate <- rawCov/bpFreq
+    
+    # we can get both stats, 
+    cutSite <- unique(as.integer(10^(seq(0,as.integer(log10(lenChoice+1))+1,.05))))
+    cuted <- cut(1:(lenChoice+1), breaks = cutSite,right = F,ordered_result = T)
+    cutPos<- as.integer(apply(data.frame(cutSite[1:(length(cutSite)-1)], cutSite[2:(length(cutSite))] ), 1, mean))
+    Tab <- table(cuted)
+    
+    aggTEmean <- aggregate(rate, list(as.integer(cuted)), mean, simplify = F)
+    aggTEsd <- aggregate(rate, list(as.integer(cuted)), sd, simplify = F)
+    
+    aggBPfreq <- aggregate(bpFreq, list(as.integer(cuted)), sum, simplify = F)
+    aggBPraw <- aggregate(rawCov, list(as.integer(cuted)), sum, simplify = F)
+    
+    usePos <- cutPos[aggTEsd$Group.1]
+    
+    biasData <- get(paste(gType, TEfam, "Bias", sep =""))
+    SPbiasData <- smooth.spline((biasData$position[complete.cases(biasData)]),biasData$bias[complete.cases(biasData)],all.knots = TRUE)
+    biasPred <- predict(SPbiasData, usePos)
+    
+    
+    shape.x <- c((usePos), rev((usePos)))
+    shape.y <- c(aggTEmean$x + (2* aggTEsd$x), rev(aggTEmean$x - (2* aggTEsd$x)))
+    shape.y.adj <- c((aggTEmean$x + (2* aggTEsd$x))/biasPred$y, rev((aggTEmean$x - (2* aggTEsd$x))/biasPred$y))
+    
+    sd <- (sqrt(bpFreq * TEs_posStats$p * (1 - TEs_posStats$p))/(bpFreq))
+    
+    pdf(file = paste(supFigPath, "corrected/dnase1/", gType, TEfam,".pdf", sep = ""), height = 3, width = 10)
+    par(mar = c(5,5,5,2))
+    plot((1:(lenChoice +1)), rate, col = 3, type = "n", ylim = c(0,.35), 
+         main = "", ylab = "retrotransposon\ndensity", 
+         xlab = "distance from boundary (bp)", yaxt = "n")
+    axis(side = 2,at = seq(0,1,.1), las = 2)
+    lines((usePos), aggTEmean$x, type = "l", col = "grey60", lwd = 3)
+    polygon(shape.x, shape.y, density =40,border = 0,col = "grey60")
+    
+    lines((usePos), (aggBPraw$x/aggBPfreq$x)/biasPred$y, col = TEcols[i],lwd = 3 )
+    polygon(shape.x, shape.y.adj, density =40,border = 0,col = TEcols[i],angle = 135)
+    
+    lines((1:(lenChoice+1)), TEs_posStats$p + 2*sd, col = 1, lwd = 2)
+    lines((1:(lenChoice+1)), TEs_posStats$p - 2*sd, col = 1, lwd = 2)  
+    legend("topright",legend = c("uncorrected", "corrected"), fill = c("grey60", TEcols[i]), bty = "n")
+    # question still is, are we accuratly capturing the bias effect through our smoothing
+    dev.off()
+    
+    #assign(x = paste(TEfam,region,"adjValues", sep = "_"),value = data.frame(position = usePos, rate = aggTEmean$x, adjRate = aggTEmean$x/biasPred$y)) 
+    
+  }
   
-  TE.gr <- GRanges(seqnames = Rle(joinRep[[TEfam]]$genoName), 
-                   ranges = IRanges(start = joinRep[[TEfam]]$genoStart, end = joinRep[[TEfam]]$genoEnd))
-  
-  gapsOpen.gr  <- get(paste("gapsOpenCell", gType, ".gr", sep = ""))
-  
-  gapsOpen <- data.frame(chr = seqnames(gapsOpen.gr), start = start(gapsOpen.gr), end = end(gapsOpen.gr), Known = width(gapsOpen.gr))
-  gapsOpen[,TEfam] = countOverlaps(gapsOpen.gr, TE.gr)
-  
-  
-  posStatBins = gapsOpen
-  
-  TEs_posStats <- covCalcPlot(lenChoice = lenChoice, repChoice = TEfam, repBins = posStatBins,repList = joinRep)
-  
-  rawCov <- (TEs_posStats$rawRepCov3 + TEs_posStats$rawRepCov5[(lenChoice+1):1])
-  bpFreq <- (TEs_posStats$baseFreq3 + TEs_posStats$baseFreq5[(lenChoice+1):1])
-  bpFreq[is.na(bpFreq)] <- 1
-  
-  rate <- rawCov/bpFreq
-  
-  # we can get both stats, 
-  cutSite <- unique(as.integer(10^(seq(0,as.integer(log10(lenChoice+1))+1,.05))))
-  cuted <- cut(1:(lenChoice+1), breaks = cutSite,right = F,ordered_result = T)
-  cutPos<- as.integer(apply(data.frame(cutSite[1:(length(cutSite)-1)], cutSite[2:(length(cutSite))] ), 1, mean))
-  Tab <- table(cuted)
-  
-  aggTEmean <- aggregate(rate, list(as.integer(cuted)), mean, simplify = F)
-  aggTEsd <- aggregate(rate, list(as.integer(cuted)), sd, simplify = F)
-  
-  aggBPfreq <- aggregate(bpFreq, list(as.integer(cuted)), sum, simplify = F)
-  aggBPraw <- aggregate(rawCov, list(as.integer(cuted)), sum, simplify = F)
-  
-  usePos <- cutPos[aggTEsd$Group.1]
-  
-  biasData <- get(paste(gType, TEfam, "Bias", sep =""))
-  SPbiasData <- smooth.spline((biasData$position[complete.cases(biasData)]),biasData$bias[complete.cases(biasData)],all.knots = TRUE)
-  biasPred <- predict(SPbiasData, usePos)
-  
-
-  shape.x <- c((usePos), rev((usePos)))
-  shape.y <- c(aggTEmean$x + (2* aggTEsd$x), rev(aggTEmean$x - (2* aggTEsd$x)))
-  shape.y.adj <- c((aggTEmean$x + (2* aggTEsd$x))/biasPred$y, rev((aggTEmean$x - (2* aggTEsd$x))/biasPred$y))
-  
-  sd <- (sqrt(bpFreq * TEs_posStats$p * (1 - TEs_posStats$p))/(bpFreq))
-  
-  pdf(file = paste("writing/round2_20160503/draftsTex/supmaterial/TexFigs/supFig/corrected/dnase1/", gType, TEfam,".pdf", sep = ""), height = 3, width = 10)
-  par(mar = c(5,5,5,2))
-  plot((1:(lenChoice +1)), rate, col = 3, type = "n", ylim = c(0,.35), 
-       main = "", ylab = "retrotransposon\ndensity", 
-       xlab = "distance from boundary (bp)", yaxt = "n")
-  axis(side = 2,at = seq(0,1,.1), las = 2)
-  lines((usePos), aggTEmean$x, type = "l", col = "grey60", lwd = 3)
-  polygon(shape.x, shape.y, density =40,border = 0,col = "grey60")
-  
-  lines((usePos), (aggBPraw$x/aggBPfreq$x)/biasPred$y, col = TEcols[i],lwd = 3 )
-  polygon(shape.x, shape.y.adj, density =40,border = 0,col = TEcols[i],angle = 135)
-  
-  lines((1:(lenChoice+1)), TEs_posStats$p + 2*sd, col = 1, lwd = 2)
-  lines((1:(lenChoice+1)), TEs_posStats$p - 2*sd, col = 1, lwd = 2)  
-  legend("topright",legend = c("uncorrected", "corrected"), fill = c("grey60", TEcols[i]), bty = "n")
-  # question still is, are we accuratly capturing the bias effect through our smoothing
-  dev.off()
-  
-  #assign(x = paste(TEfam,region,"adjValues", sep = "_"),value = data.frame(position = usePos, rate = aggTEmean$x, adjRate = aggTEmean$x/biasPred$y)) 
-  
-}
-
 }
 
 
 
 # we can rerun this loop to get the lines we need
-pdf(file = "plots/TEopenChromInteract/TEboundary.pdf", height = 5, width =3)
+pdf(file = paste(plotPathOpenChrom,"TEboundary.pdf", sep = ""), height = 5, width =3)
 layout(c(1,2,3,4))
 par(mar = c(2,5,.5,5))
 for(i in 1:4){
@@ -524,9 +479,9 @@ for(i in 1:4){
     shape.y <- c((((aggBPraw$x/aggBPfreq$x)/biasPred$y) - TEs_posStats$p) + (3 *sd[usePos]), 
                  rev((((aggBPraw$x/aggBPfreq$x)/biasPred$y) - TEs_posStats$p) - (3 * sd[usePos])))
 
-    polygon(shape.x, shape.y, density =20,border = 0,col = j+1 ,angle = 135)
+    polygon(shape.x, shape.y, density =20,border = 0,col = c("red","aquamarine3")[j] ,angle = 135)
 
-    lines((usePos), (((aggBPraw$x/aggBPfreq$x)/biasPred$y) - TEs_posStats$p), col = j + 1,lwd = 1 )
+    lines((usePos), (((aggBPraw$x/aggBPfreq$x)/biasPred$y) - TEs_posStats$p), col = c("red","aquamarine3")[j],lwd = 3 )
 
   abline(h = 0, lty = 2)   
 
@@ -568,7 +523,7 @@ resL <- covCalcPlot(lenChoice = lenChoice, repChoice = repChoice, repBins = gaps
 
 
 
-pdf(file = "plots/TEopenChromInteract/TPRT.pdf", height = 4, width = 3)
+pdf(file = paste(plotPathOpenChrom,"TPRT.pdf", sep = ""), height = 4, width = 3)
 
 layout(c(1))
 cutter <- cut(sqrt(1:(lenChoice+1)), breaks = seq(0, sqrt(lenChoice),by = 10 ),include.lowest = T)
@@ -590,29 +545,11 @@ raw5 = aggregate(x = rev(resL$rawRepCov5), list(cutter), FUN = sum)
 freq5 = aggregate(x = rev(resL$baseFreq5), list(cutter), FUN = sum)
 
 lines(seq(5,by = 10,length.out = nrow(raw5) )^2,((raw3$x+raw5$x) / (freq3$x + freq5$x )) * 1000000, 
-      ylim = c(0,350), type = "l",lwd = 3, col = 3)
-abline(h = (sum(width(intersect(TE.gr,LnonExonBases.gr)))/sum(width(LnonExonBases.gr)))* 10^6 , lty = 2, lwd = 3, col=3)
+      ylim = c(0,350), type = "l",lwd = 3, col = "aquamarine3")
+abline(h = (sum(width(intersect(TE.gr,LnonExonBases.gr)))/sum(width(LnonExonBases.gr)))* 10^6 , lty = 2, lwd = 3, col="aquamarine3")
 
 dev.off()
 
 
 
-
-
-# pick a range of criteria, so FAIRE and DNase
-
-# If we could generate some insertion sites for L1s, if we use 3' end mapping to look at where they stack up
-
-# merge our data from a range of cell types
-
-
-
-# some of the background stuff, TE density per intergenic region
-
-
-
-# produce gap data here 
-
-
-# differences between types of dnase hypersenstivity sites
 

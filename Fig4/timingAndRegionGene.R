@@ -6,7 +6,7 @@
 
 
 
-setwd("~/Desktop/Domain_manuscript/")
+setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation/")
 
 rm(list = ls())
 
@@ -17,9 +17,14 @@ spec1 <- "Human"
 genome = "hg19"
 
 
-source(file="~/Desktop/Domain_manuscript/Domain_manuscript_scripts/functions.R")
-source(file="~/Desktop/Domain_manuscript/Domain_manuscript_scripts/rep_db.R")
-load(file = "~/Desktop/Domain_manuscript/R_objects/chromStateCombined")
+source(file="baseScripts/functions.R")
+source(file="baseScripts/rep_db.R")
+
+
+pathOpenChrom = "../accesoryFiles/Data/OpenChromSynth/"
+plotPath = "../plots/Fig3/"
+#supFigPath = "../plots/supFigs/"
+RDpath = "../accesoryFiles/Data/ConsTimingDomains"
 
 # so lets read in the whole genome and find a way to build the neighbormatrix
 
@@ -120,7 +125,7 @@ joinRep <- list(old_L1 = rbind(rep$L1ME, rep$L1MD, rep$L1MC, rep$L1MB),
 
 
 
-domainRanges <- read.table("Data/ConsTimingDomains", header = T)
+domainRanges <- read.table(RDpath, header = T)
 domainRangesE <- domainRanges[domainRanges$domain == "ERD",]
 domainRangesL <- domainRanges[domainRanges$domain == "LRD",]
 
@@ -177,10 +182,10 @@ LintronCounts <- intronJoinedFam[OLintronL[,1],]
 
 
 
-files <- list.files("Data/OpenChromSynth/")
+files <- list.files(pathOpenChrom)
 allOpen <- NULL
 for(i in 1:length(files)){
-  dat <- read.table(paste("Data/OpenChromSynth/",files[i], sep = ""))
+  dat <- read.table(paste(pathOpenChrom,files[i], sep = ""))
   dat[,22] <- as.factor(gsub("_[0-9]+","",dat[,4]))
   colnames(dat) <- c("chr", "start", "end", "hitTypeNumber", "score", "strand", "start2", "end2", "colour", "Pval",
                      "dnaseSig", "dnasePval", "faireSig", "fairePval", "polIISig", "polIIPval", "ctcfSig","ctcfPval","cmycSig", "cmycPval", "ocCode", "ocType")
@@ -259,72 +264,76 @@ for(i in c(1:2)){
 
 ylims = c(.15,.2,.3,.15)
 
-region = "intron"
-#TEfam = "new_L1"
-pdf(file = paste("plots/TEopenChromInteract/geneRepTime", region, ".pdf", sep=""), height = 12,width = 6)
- layout(matrix(1:10, nrow = 5, byrow = TRUE))
+
+# need to put a loop here to seperate out the regions
+
+for(r in 1:2){
+  region = c("intergenic","intron")[r]
+  #TEfam = "new_L1"
+  pdf(file = paste(plotPath,"geneRepTime", region, ".pdf", sep=""), height = 12,width = 6)
+  layout(matrix(1:10, nrow = 5, byrow = TRUE))
   par(mar=c(5,5,5,5))
-for(i in 1:4){
-  TEfam = names(joinRep)[i]
-  
-  
-  posStatBins = get(paste("E",region,"Counts",sep = ""))
-  lenChoice = max(posStatBins$end - posStatBins$start)/2
-  
-  TEs_posStats <- covCalcPlot5prime3prime(lenChoice = lenChoice,repChoice = TEfam,repBins = posStatBins,repList = joinRep,refgene = refgene,type = region,repType = "repeats")
-  
-  TEs_posStatsE <- TEs_posStats
-  
-  posStatBins = get(paste("L",region,"Counts",sep = ""))
-  lenChoice = max(posStatBins$end - posStatBins$start)/2
-  
-  TEs_posStats <- covCalcPlot5prime3prime(lenChoice = lenChoice,repChoice = TEfam,repBins = posStatBins,repList = joinRep,refgene = refgene,type = region,repType = "repeats")
-  
-  TEs_posStatsL <- TEs_posStats
-  
-
- 
-  len <- 100000
-
-  
-  prime5E <- rev(TEs_posStatsE$rawRepCov5/TEs_posStatsE$baseFreq5prime)[1:len]
-  prime5L <- rev(TEs_posStatsL$rawRepCov5/TEs_posStatsL$baseFreq5prime)[1:len]
-  
-  prime3E <- (TEs_posStatsE$rawRepCov3/TEs_posStatsE$baseFreq3prime)[1:len]
-  prime3L <- (TEs_posStatsL$rawRepCov3/TEs_posStatsL$baseFreq3prime)[1:len]
-  
-  breaker <- seq(0,log10(len)+1,by = .08)
-  cuter <- cut(log10(1:len),breaks = breaker )
-  agg5E <- aggregate(prime5E, list(cuter), mean)
-  agg5L <- aggregate(prime5L, list(cuter), mean)
-  breakDF5 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
-  breakDF5 <- merge(breakDF5,agg5E, by.x = 1, by.y = 1)
-  breakDF5 <- merge(breakDF5,agg5L, by.x = 1, by.y = 1)
-  
-  agg3E <- aggregate(prime3E, list(cuter), mean)
-  agg3L <- aggregate(prime3L, list(cuter), mean)
-  breakDF3 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
-  breakDF3 <- merge(breakDF3,agg3E, by.x = 1, by.y = 1)
-  breakDF3 <- merge(breakDF3,agg3L, by.x = 1, by.y = 1)
-  
-  plot((breakDF5[,2]),(breakDF5[,3]),type = "l", col = 2, xlim = c(log10(len),0), lwd = 3, xlab = region, ylab = TEfam, ylim = c(0,ylims[i]), las = 2, xaxt = "n")
-  lines((breakDF5[,2]),breakDF5[,4],type = "l", col = 3, lwd = 3)
-  grid()
-  
-  if(i == 4){
-    axis(side = 1, at = 0:8, 10^(0:8)/1000)
+  for(i in 1:4){
+    TEfam = names(joinRep)[i]
+    
+    
+    posStatBins = get(paste("E",region,"Counts",sep = ""))
+    lenChoice = max(posStatBins$end - posStatBins$start)/2
+    
+    TEs_posStats <- covCalcPlot5prime3prime(lenChoice = lenChoice,repChoice = TEfam,repBins = posStatBins,repList = joinRep,refgene = refgene,type = region,repType = "repeats")
+    
+    TEs_posStatsE <- TEs_posStats
+    
+    posStatBins = get(paste("L",region,"Counts",sep = ""))
+    lenChoice = max(posStatBins$end - posStatBins$start)/2
+    
+    TEs_posStats <- covCalcPlot5prime3prime(lenChoice = lenChoice,repChoice = TEfam,repBins = posStatBins,repList = joinRep,refgene = refgene,type = region,repType = "repeats")
+    
+    TEs_posStatsL <- TEs_posStats
+    
+    
+    
+    len <- 100000
+    
+    
+    prime5E <- rev(TEs_posStatsE$rawRepCov5/TEs_posStatsE$baseFreq5prime)[1:len]
+    prime5L <- rev(TEs_posStatsL$rawRepCov5/TEs_posStatsL$baseFreq5prime)[1:len]
+    
+    prime3E <- (TEs_posStatsE$rawRepCov3/TEs_posStatsE$baseFreq3prime)[1:len]
+    prime3L <- (TEs_posStatsL$rawRepCov3/TEs_posStatsL$baseFreq3prime)[1:len]
+    
+    breaker <- seq(0,log10(len)+1,by = .08)
+    cuter <- cut(log10(1:len),breaks = breaker )
+    agg5E <- aggregate(prime5E, list(cuter), mean)
+    agg5L <- aggregate(prime5L, list(cuter), mean)
+    breakDF5 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
+    breakDF5 <- merge(breakDF5,agg5E, by.x = 1, by.y = 1)
+    breakDF5 <- merge(breakDF5,agg5L, by.x = 1, by.y = 1)
+    
+    agg3E <- aggregate(prime3E, list(cuter), mean)
+    agg3L <- aggregate(prime3L, list(cuter), mean)
+    breakDF3 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
+    breakDF3 <- merge(breakDF3,agg3E, by.x = 1, by.y = 1)
+    breakDF3 <- merge(breakDF3,agg3L, by.x = 1, by.y = 1)
+    
+    plot((breakDF5[,2]),(breakDF5[,3]),type = "l", col = 2, xlim = c(log10(len),0), lwd = 3, xlab = region, ylab = TEfam, ylim = c(0,ylims[i]), las = 2, xaxt = "n")
+    lines((breakDF5[,2]),breakDF5[,4],type = "l", col = 3, lwd = 3)
+    grid()
+    
+    if(i == 4){
+      axis(side = 1, at = 0:8, 10^(0:8)/1000)
+    }
+    
+    plot((breakDF3[,2]),breakDF3[,3],type = "l", col = 2, xlim = c(0, log10(len)), lwd = 3, xlab = region, ylab = TEfam, ylim = c(0,ylims[i]), las = 2, xaxt = "n", yaxt = "n")
+    lines((breakDF3[,2]),breakDF3[,4],type = "l", col = 3, lwd = 3)
+    grid()
+    
+    if(i == 4){
+      axis(side = 1, at = 0:8, 10^(0:8)/1000)
+    }
+    
+    
   }
-  
-  plot((breakDF3[,2]),breakDF3[,3],type = "l", col = 2, xlim = c(0, log10(len)), lwd = 3, xlab = region, ylab = TEfam, ylim = c(0,ylims[i]), las = 2, xaxt = "n", yaxt = "n")
-  lines((breakDF3[,2]),breakDF3[,4],type = "l", col = 3, lwd = 3)
-  grid()
-  
-  if(i == 4){
-    axis(side = 1, at = 0:8, 10^(0:8)/1000)
-  }
-  
-  
-}
 
 
 
@@ -434,9 +443,8 @@ openStyle <- c("Nexon", "Prom")
     
     
 dev.off()
-#}
 
-
+}
 
 
 

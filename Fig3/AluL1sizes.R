@@ -9,7 +9,7 @@
 # O-E 
 
 
-setwd("~/Desktop/Domain_manuscript/")
+setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation/")
 
 rm(list = ls())
 
@@ -20,8 +20,16 @@ spec1 <- "Human"
 genome = "hg19"
 
 
-source(file="~/Desktop/Domain_manuscript/Domain_manuscript_scripts/functions.R")
-source(file="~/Desktop/Domain_manuscript/Domain_manuscript_scripts/rep_db.R")
+source(file="baseScripts/functions.R")
+source(file="baseScripts/rep_db.R")
+
+
+pathOpenChrom = "../accesoryFiles/Data/OpenChromSynth/"
+plotPath = "../plots/Fig3/"
+supFigPath = "../plots/supFigs/"
+RDpath = "../accesoryFiles/Data/ConsTimingDomains"
+
+
 
 
 rep = rep_info(spec1=spec1,genome=genome)
@@ -35,7 +43,7 @@ joinRep <- list(old_L1 = rbind(rep$L1ME, rep$L1MD, rep$L1MC, rep$L1MB),
 
 
 
-domainRanges <- read.table("Data/ConsTimingDomains", header = T)
+domainRanges <- read.table(RDpath, header = T)
 domainRangesE <- domainRanges[domainRanges$domain == "ERD",]
 domainRangesL <- domainRanges[domainRanges$domain == "LRD",]
 
@@ -93,37 +101,31 @@ L1Lcov <- coverage(elementMetadata(L1L)$repRange)[1:6000]
 L1Acov <- coverage(elementMetadata(L1Range)$repRange)[1:6000]
 
 
-pdf(file = "~/Desktop/Domain_manuscript/plots/TEopenChromInteract/RTNpos.pdf", height = 3.2,width = 3)
+pdf(file = paste(plotPath,"RTNpos.pdf", sep = ""), height = 3.2,width = 3)
 par(mar = c(5,5,2,2))
 plot((1:6000),(L1Acov/sum(L1Acov))*6000,type = "l", ylim = c(0,4), col = "purple", lwd = 3, xaxt = "n", xlab = "", 
      ylab = "", las = 2)
 par(new = TRUE)
-plot((AluAcov/sum(AluAcov))*300, type = "l", ylim = c(0,4), col = "darkgreen", lwd = 3,axes = FALSE, xlab = "", ylab = "")
+plot((AluAcov/sum(AluAcov))*300, type = "l", ylim = c(0,4), col = "aquamarine3", lwd = 3,axes = FALSE, xlab = "", ylab = "")
 axis(side = 1, at = c(0,150,300), labels = FALSE)
 mtext(text = c(0,50,100),side = 1,line = 1,at = c(0,150,300), col = "black")
 mtext(text = "position in full length RTN\nfrom 3' end (%)",side = 1,line = 3)
 mtext(text = "RTN position density (O/E)", side = 2,line = 2)
 abline(h = 1, lty = 3, lwd = 3)
-legend("topright", legend = c("Alu", "new L1"), fill = c("darkgreen", "purple"), bty = "n")
+legend("topright", legend = c("Alu", "new L1"), fill = c("aquamarine3", "purple"), bty = "n")
 dev.off()
 # mtext(text = c(1,3000,6000),side = 1,line = 1,at = c(1,150,300), col = "purple")
-# mtext(text = c(1,150,300),side = 1,line = 2,at = c(1,150,300), col = "darkgreen")
-
-# to pos 300
-plot((L1Acov/sum(L1Acov))*6000,type = "l", ylim = c(0,4), xlim=c(0,300),col = "purple", lwd = 3, xaxt = "n", xlab = "", ylab = "")
-lines((AluAcov/sum(AluAcov))*300, type = "l", col = "darkgreen", lwd = 3)
-axis(side = 1, at = c(1,150,300))
+# mtext(text = c(1,150,300),side = 1,line = 2,at = c(1,150,300), col = "aquamarine3")
 
 
 
-
-pdf(file = "~/Desktop/Domain_manuscript/plots/TEopenChromInteract/RTNdomainEnrich.pdf", height = 3.2,width = 3)
+pdf(file = paste(plotPath,"RTNdomainEnrich.pdf", sep= ""), height = 3.2,width = 3)
 par(mar = c(5,5,2,2))
 plot((L1Ecov/sum(width(L1E))) / (L1Lcov/sum(width(L1L))),type = "l", ylim = c(.8,1.5), col = "purple", lwd = 3, xaxt = "n", 
      xlab = "", ylab = "", las = 2)
 par(new = TRUE)
 plot((AluEcov/sum(width(AluE))) / (AluLcov/sum(width(AluL))), type = "l", 
-     ylim = c(.8,1.5), col = "darkgreen", lwd = 3,axes = FALSE, xlab = "", ylab = "")
+     ylim = c(.8,1.5), col = "aquamarine3", lwd = 3,axes = FALSE, xlab = "", ylab = "")
 axis(side = 1, at = c(1,150,300), labels = FALSE)
 mtext(text = c(0,50,100),side = 1,line = 1,at = c(0,150,300), col = "black")
 mtext("position in full length RTN\nfrom 3' end (%)",side = 1,line = 3)
@@ -132,7 +134,7 @@ abline(h = 1, lty = 3, lwd = 3)
 dev.off()
 
 # mtext(text = c(1,3000,6000),side = 1,line = 1,at = c(1,150,300), col = "purple")
-# mtext(text = c(1,150,300),side = 1,line = 2,at = c(1,150,300), col = "darkgreen")
+# mtext(text = c(1,150,300),side = 1,line = 2,at = c(1,150,300), col = "aquamarine3")
 
 
 ### the next bit is to measure the corrected TPRT O-E cERD:cLRD ratio
@@ -198,10 +200,10 @@ nonExonRegion.gr <- GRanges(seqnames = Rle(c(as.character(bins_gene_gap$chr),as.
 
 
 
-files <- list.files("Data/OpenChromSynth/")
+files <- list.files(pathOpenChrom)
 allOpen <- NULL
 for(i in 1:length(files)){
-  dat <- read.table(paste("Data/OpenChromSynth/",files[i], sep = ""))
+  dat <- read.table(paste(pathOpenChrom,files[i], sep = ""))
   dat[,22] <- as.factor(gsub("_[0-9]+","",dat[,4]))
   colnames(dat) <- c("chr", "start", "end", "hitTypeNumber", "score", "strand", "start2", "end2", "colour", "Pval",
                      "dnaseSig", "dnasePval", "faireSig", "fairePval", "polIISig", "polIIPval", "ctcfSig","ctcfPval","cmycSig", "cmycPval", "ocCode", "ocType")
@@ -318,8 +320,8 @@ for(i in 1:2){
   freq5 = aggregate(x = rev(resL$baseFreq5), list(cutter), FUN = sum)
   
   lines(seq(5,by = 10,length.out = nrow(raw5) )^2,((raw3$x+raw5$x) / (freq3$x + freq5$x )) * 1000000, 
-        ylim = c(0,350), type = "l",lwd = 3, col = 3)
-  abline(h = (sum(width(intersect(TE.gr,LnonExonBases.gr)))/sum(width(LnonExonBases.gr)))* 10^6 , lty = 2, lwd = 3, col=3)
+        ylim = c(0,350), type = "l",lwd = 3, col = "aquamarine3")
+  abline(h = (sum(width(intersect(TE.gr,LnonExonBases.gr)))/sum(width(LnonExonBases.gr)))* 10^6 , lty = 2, lwd = 3, col= "aquamarine3")
   
   ob <- ((raw3$x+raw5$x) / (freq3$x + freq5$x )) * 1000000
   ex <- (sum(width(intersect(TE.gr,LnonExonBases.gr)))/sum(width(LnonExonBases.gr)))* 10^6
@@ -339,9 +341,9 @@ for(i in 1:2){
 
 # I don't think this trick works because it starts to water down the effects
 # maybe look at values relative to an expected out come related to a lowerbound sigma
-pdf(file = "~/Desktop/Domain_manuscript/plots/TEopenChromInteract/RTNdomainDNase1.pdf", height = 3.2,width = 3)
+pdf(file = paste(plotPath,"RTNdomainDNase1.pdf",sep = ""), height = 3.2,width = 3)
 par(mar = c(5,5,2,2))
-plot(seq(5,by = 10,length.out = nrow(raw5) )^2,(EAlu_TPRTOE) / (LAlu_TPRTOE), type = "l",ylim = c(0,8), xlim = c(0,15000),col = "darkgreen", lwd = 3, 
+plot(seq(5,by = 10,length.out = nrow(raw5) )^2,(EAlu_TPRTOE) / (LAlu_TPRTOE), type = "l",ylim = c(0,8), xlim = c(0,15000),col = "aquamarine3", lwd = 3, 
      ylab = "", xlab = "distance from DNase1\ncluster boundary (kb)", xaxt = "n", las = 2)
 lines(seq(5,by = 10,length.out = nrow(raw5) )^2,(Enew_L1_TPRTOE)/(Lnew_L1_TPRTOE), lwd = 3, col = "purple")
 abline(h=1, lty = 3, lwd = 3)
@@ -350,24 +352,24 @@ axis(side = 1,at = seq(0,30000,5000), seq(0,30,5))
 dev.off()
 
 
-pdf(file = "~/Desktop/Domain_manuscript/plots/TEopenChromInteract/RTNdomainDNase1Alu.pdf", height = 3.2,width = 3)
+pdf(file = paste(plotPath, "RTNdomainDNase1Alu.pdf", sep = ""), height = 3.2,width = 3)
 par(mar = c(5,5,2,2))
 plot(seq(5,by = 10,length.out = nrow(raw5) )^2,EAlu_TPRTOE, type = "l", ylim = c(0,9),xlim = c(0,15000),col = "red", lwd = 3, 
      ylab = "", xlab = "distance from DNase1\ncluster boundary (kb)", xaxt = "n", las = 2)
-lines(seq(5,by = 10,length.out = nrow(raw5) )^2,LAlu_TPRTOE, lty = 1, lwd =3 , col = "green")
+lines(seq(5,by = 10,length.out = nrow(raw5) )^2,LAlu_TPRTOE, lty = 1, lwd =3 , col = "aquamarine3")
 axis(side = 1,at = seq(0,30000,5000), seq(0,30,5))
 legend("topright", legend = "Alu", bty = "n")
-legend("topleft", legend = c("cERD", "cLRD"), fill = c("red", "green"), title = "Domain", bty = "n")
+legend("topleft", legend = c("cERD", "cLRD"), fill = c("red", "aquamarine3"), title = "Domain", bty = "n")
 abline(h=1, lty = 3, lwd = 3)
 mtext("insertion rate (O/E)",side = 2,line = 2)
 
 dev.off()
 
-pdf(file = "~/Desktop/Domain_manuscript/plots/TEopenChromInteract/RTNdomainDNase1NewL1.pdf", height = 3.2,width = 3)
+pdf(file = paste(plotPath, "RTNdomainDNase1NewL1.pdf", sep = ""), height = 3.2,width = 3)
 par(mar = c(5,5,2,2))
 plot(seq(5,by = 10,length.out = nrow(raw5) )^2,Enew_L1_TPRTOE, type = "l", ylim = c(0,9),xlim = c(0,15000),col = "red", lwd = 3, 
      ylab = "", xlab = "distance from DNase1\ncluster boundary (kb)", xaxt = "n", las = 2)
-lines(seq(5,by = 10,length.out = nrow(raw5) )^2,Lnew_L1_TPRTOE, lty = 1, lwd =3 , col = "green")
+lines(seq(5,by = 10,length.out = nrow(raw5) )^2,Lnew_L1_TPRTOE, lty = 1, lwd =3 , col = "aquamarine3")
 axis(side = 1,at = seq(0,30000,5000), seq(0,30,5))
 legend("topright", legend = "new L1", bty = "n")
 abline(h=1, lty = 3, lwd = 3)
@@ -375,12 +377,12 @@ mtext("insertion rate (O/E)",side = 2,line = 2)
 
 dev.off()
 
-
-
-lines(seq(5,by = 10,length.out = nrow(raw5) )^2,Enew_L1_TPRTOE, col = 2)
-lines(seq(5,by = 10,length.out = nrow(raw5) )^2,Lnew_L1_TPRTOE, col = 2, lty = 3)
-
-abline(h=1)
+# 
+# 
+# lines(seq(5,by = 10,length.out = nrow(raw5) )^2,Enew_L1_TPRTOE, col = 2)
+# lines(seq(5,by = 10,length.out = nrow(raw5) )^2,Lnew_L1_TPRTOE, col = 2, lty = 3)
+# 
+# abline(h=1)
 
 # maybe there's some sort of transformation I can apply
 
@@ -408,7 +410,7 @@ abline(h=1)
 # 
 # 
 # for(i in 1:2){
-#   TEcols = c("darkgreen", "purple")[i]
+#   TEcols = c("aquamarine3", "purple")[i]
 #   repChoice = c("Alu_TPRT", "new_L1_TPRT")[i]
 #   TE.gr <- GRanges(seqnames = Rle(joinRep[[repChoice]]$genoName), 
 #                    ranges = IRanges(start = joinRep[[repChoice]]$genoStart, end = joinRep[[repChoice]]$genoEnd))
@@ -502,7 +504,7 @@ abline(h=1)
 # 
 # 
 # 
-# TEcols = c("darkgreen", "purple")
+# TEcols = c("aquamarine3", "purple")
 # for(j in 1:3){
 #   for(i in 1:2){
 #     TEfam = c("Alu_TPRT", "new_L1_TPRT")[i]
