@@ -22,7 +22,7 @@ source(file="baseScripts/rep_db.R")
 
 
 pathOpenChrom = "../accesoryFiles/Data/OpenChromSynth/"
-plotPath = "../plots/Fig3/"
+plotPath = "../plots/Fig4/"
 #supFigPath = "../plots/supFigs/"
 RDpath = "../accesoryFiles/Data/ConsTimingDomains"
 
@@ -269,11 +269,116 @@ ylims = c(.15,.2,.3,.15)
 
 for(r in 1:2){
   region = c("intergenic","intron")[r]
-  #TEfam = "new_L1"
-  pdf(file = paste(plotPath,"geneRepTime", region, ".pdf", sep=""), height = 12,width = 6)
+  pdf(file = paste(plotPath,"geneRepTime", region, ".pdf", sep=""), height = 5,width = 6)
   layout(matrix(1:10, nrow = 5, byrow = TRUE))
-  par(mar=c(5,5,5,5))
-  for(i in 1:4){
+  par(mar=c(.5,1.5,.5,1.5), oma = c(6,5,6,5))
+  
+  
+  
+  openStyle <- c("Nexon", "Prom")
+  #regionType <- c("intergenic", "intron")
+  
+  #for(i in 1:2){
+  # region = regionType[i]
+  
+  for(j in 1:2){
+    openS = openStyle[j]
+    OpenStatBins = get(paste(openS,region,"Open", sep = ""))
+    OpenChromList <- get(paste(openS,"OpenChromList", sep = ""))
+    
+    
+    OpenStatBinsE = OpenStatBins[get(paste("OL",region,"E", sep = ""))[,1],]
+    lenChoice = 100000
+    Open_posStatE = covCalcPlot5prime3prime(lenChoice = lenChoice, repChoice = "openChrom", 
+                                            repBins = OpenStatBinsE, repList = OpenChromList, 
+                                            refgene = refgene, type = region, repType = "repeats")
+    
+    OpenStatBinsL = OpenStatBins[get(paste("OL",region,"L", sep = ""))[,1],]
+    Open_posStatL = covCalcPlot5prime3prime(lenChoice = lenChoice, repChoice = "openChrom", 
+                                            repBins = OpenStatBinsL, repList = OpenChromList, 
+                                            refgene = refgene, type = region, repType = "repeats")
+    
+    assign(paste("Open_posStatE",openS, sep=""),Open_posStatE)
+    assign(paste("Open_posStatL",openS, sep=""),Open_posStatL) 
+    
+  }
+  
+  # draw lines here
+  prime5E <- rev(Open_posStatENexon$rawRepCov5/Open_posStatE$baseFreq5prime)[1:len]
+  prime5L <- rev(Open_posStatLNexon$rawRepCov5/Open_posStatL$baseFreq5prime)[1:len]
+  
+  breaker <- seq(0,log10(len)+1,by = .08)
+  cuter <- cut(log10(1:len),breaks = breaker )
+  agg5E <- aggregate(prime5E, list(cuter), mean)
+  agg5L <- aggregate(prime5L, list(cuter), mean)
+  breakDF5 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
+  breakDF5 <- merge(breakDF5,agg5E, by.x = 1, by.y = 1)
+  breakDF5 <- merge(breakDF5,agg5L, by.x = 1, by.y = 1)
+  
+  
+  plot((breakDF5[,2]),(breakDF5[,3]),type = "l", col = 2, xlim = c(log10(len),0), lwd = 3, xlab = TEfam, ylab = region, ylim = c(0,.9), lty = 1, xaxt = "n",yaxt = "n", las = 2)
+  axis(side = 2,at = seq(0,.8,.2), labels = c("0.0","","0.4", "", "0.8"), las = 2)
+  lines((breakDF5[,2]),breakDF5[,4],type = "l", col = "aquamarine3", lwd = 3, lty = 1)
+  grid()
+  
+  prime5E <- rev(Open_posStatEProm$rawRepCov5/Open_posStatEProm$baseFreq5prime)[1:len]
+  prime5L <- rev(Open_posStatLProm$rawRepCov5/Open_posStatLProm$baseFreq5prime)[1:len]
+  
+  breaker <- seq(0,log10(len)+1,by = .08)
+  cuter <- cut(log10(1:len),breaks = breaker )
+  agg5E <- aggregate(prime5E, list(cuter), mean)
+  agg5L <- aggregate(prime5L, list(cuter), mean)
+  breakDF5 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
+  breakDF5 <- merge(breakDF5,agg5E, by.x = 1, by.y = 1)
+  breakDF5 <- merge(breakDF5,agg5L, by.x = 1, by.y = 1)
+  
+  lines((breakDF5[,2]),(breakDF5[,3]),type = "l", col = 2, lwd = 3, lty = 3)
+  lines((breakDF5[,2]),breakDF5[,4],type = "l", col = "aquamarine3", lwd = 3, lty = 3)
+  #grid()
+  
+  
+  
+  ##### 3 prime side
+  
+  prime3E <- (Open_posStatENexon$rawRepCov3/Open_posStatENexon$baseFreq3prime)[1:len]
+  prime3L <- (Open_posStatLNexon$rawRepCov3/Open_posStatLNexon$baseFreq3prime)[1:len]
+  
+  breaker <- seq(0,log10(len)+1,by = .08)
+  cuter <- cut(log10(1:len),breaks = breaker )
+  
+  agg3E <- aggregate(prime3E, list(cuter), mean)
+  agg3L <- aggregate(prime3L, list(cuter), mean)
+  breakDF3 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
+  breakDF3 <- merge(breakDF3,agg3E, by.x = 1, by.y = 1)
+  breakDF3 <- merge(breakDF3,agg3L, by.x = 1, by.y = 1)
+  
+  
+  plot((breakDF3[,2]),breakDF3[,3],type = "l", col = 2, xlim = c(0, log10(len)), lwd = 3, xlab = TEfam, ylab = region, ylim = c(0,.9), lty = 1, xaxt = "n", yaxt = "n")
+  lines((breakDF3[,2]),breakDF3[,4],type = "l", col = "aquamarine3", lwd = 3, lty = 1)
+  grid()
+  
+  prime3E <- (Open_posStatEProm$rawRepCov3/Open_posStatEProm$baseFreq3prime)[1:len]
+  prime3L <- (Open_posStatLProm$rawRepCov3/Open_posStatLProm$baseFreq3prime)[1:len]
+  
+  breaker <- seq(0,log10(len)+1,by = .08)
+  cuter <- cut(log10(1:len),breaks = breaker )
+  
+  agg3E <- aggregate(prime3E, list(cuter), mean)
+  agg3L <- aggregate(prime3L, list(cuter), mean)
+  breakDF3 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
+  breakDF3 <- merge(breakDF3,agg3E, by.x = 1, by.y = 1)
+  breakDF3 <- merge(breakDF3,agg3L, by.x = 1, by.y = 1)
+  
+  
+  lines((breakDF3[,2]),breakDF3[,3],type = "l", col = 2, lwd = 3, lty = 3)
+  lines((breakDF3[,2]),breakDF3[,4],type = "l", col = "aquamarine3", lwd = 3, lty = 3)
+  #grid()
+  
+  
+  
+  
+  
+  for(i in c(3,2,1,4)){
     TEfam = names(joinRep)[i]
     
     
@@ -290,8 +395,6 @@ for(r in 1:2){
     TEs_posStats <- covCalcPlot5prime3prime(lenChoice = lenChoice,repChoice = TEfam,repBins = posStatBins,repList = joinRep,refgene = refgene,type = region,repType = "repeats")
     
     TEs_posStatsL <- TEs_posStats
-    
-    
     
     len <- 100000
     
@@ -316,134 +419,27 @@ for(r in 1:2){
     breakDF3 <- merge(breakDF3,agg3E, by.x = 1, by.y = 1)
     breakDF3 <- merge(breakDF3,agg3L, by.x = 1, by.y = 1)
     
-    plot((breakDF5[,2]),(breakDF5[,3]),type = "l", col = 2, xlim = c(log10(len),0), lwd = 3, xlab = region, ylab = TEfam, ylim = c(0,ylims[i]), las = 2, xaxt = "n")
-    lines((breakDF5[,2]),breakDF5[,4],type = "l", col = 3, lwd = 3)
+    plot((breakDF5[,2]),(breakDF5[,3]),type = "l", col = 2, xlim = c(log10(len),0), lwd = 3, xlab = region, ylab = TEfam, ylim = c(0,ylims[i]), las = 2, xaxt = "n", yaxt = "n")
+    lines((breakDF5[,2]),breakDF5[,4],type = "l", col = "aquamarine3", lwd = 3)
+    axis(side = 2, at = seq(0,.3,.05), labels = c("0.0", "", "0.1", "", "0.2", "", "0.3"), las = 2)
     grid()
     
     if(i == 4){
-      axis(side = 1, at = 0:8, 10^(0:8)/1000)
+      axis(side = 1, at = 0:8, 10^(0:8)/1000 , las = 1)
     }
     
     plot((breakDF3[,2]),breakDF3[,3],type = "l", col = 2, xlim = c(0, log10(len)), lwd = 3, xlab = region, ylab = TEfam, ylim = c(0,ylims[i]), las = 2, xaxt = "n", yaxt = "n")
-    lines((breakDF3[,2]),breakDF3[,4],type = "l", col = 3, lwd = 3)
+    lines((breakDF3[,2]),breakDF3[,4],type = "l", col = "aquamarine3", lwd = 3)
     grid()
     
     if(i == 4){
-      axis(side = 1, at = 0:8, 10^(0:8)/1000)
+      axis(side = 1, at = 0:8, 10^(0:8)/1000, las =1)
     }
     
     
   }
-
-
-
-### plotting the open chromatin
-
-
-
-openStyle <- c("Nexon", "Prom")
-#regionType <- c("intergenic", "intron")
-
-#for(i in 1:2){
- # region = regionType[i]
+  dev.off()
   
-  for(j in 1:2){
-    openS = openStyle[j]
-    OpenStatBins = get(paste(openS,region,"Open", sep = ""))
-    OpenChromList <- get(paste(openS,"OpenChromList", sep = ""))
-    
-    
-    OpenStatBinsE = OpenStatBins[get(paste("OL",region,"E", sep = ""))[,1],]
-    lenChoice = 100000
-    Open_posStatE = covCalcPlot5prime3prime(lenChoice = lenChoice, repChoice = "openChrom", 
-                                        repBins = OpenStatBinsE, repList = OpenChromList, 
-                                        refgene = refgene, type = region, repType = "repeats")
-    
-    OpenStatBinsL = OpenStatBins[get(paste("OL",region,"L", sep = ""))[,1],]
-    Open_posStatL = covCalcPlot5prime3prime(lenChoice = lenChoice, repChoice = "openChrom", 
-                                            repBins = OpenStatBinsL, repList = OpenChromList, 
-                                            refgene = refgene, type = region, repType = "repeats")
-   
-    assign(paste("Open_posStatE",openS, sep=""),Open_posStatE)
-    assign(paste("Open_posStatL",openS, sep=""),Open_posStatL) 
-    
-  }
-    
-    # draw lines here
-
-    
-    prime5E <- rev(Open_posStatENexon$rawRepCov5/Open_posStatE$baseFreq5prime)[1:len]
-    prime5L <- rev(Open_posStatLNexon$rawRepCov5/Open_posStatL$baseFreq5prime)[1:len]
-    
-    breaker <- seq(0,log10(len)+1,by = .08)
-    cuter <- cut(log10(1:len),breaks = breaker )
-    agg5E <- aggregate(prime5E, list(cuter), mean)
-    agg5L <- aggregate(prime5L, list(cuter), mean)
-    breakDF5 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
-    breakDF5 <- merge(breakDF5,agg5E, by.x = 1, by.y = 1)
-    breakDF5 <- merge(breakDF5,agg5L, by.x = 1, by.y = 1)
-    
-    
-    plot((breakDF5[,2]),(breakDF5[,3]),type = "l", col = 2, xlim = c(log10(len),0), lwd = 3, xlab = TEfam, ylab = region, ylim = c(0,.9), lty = 1, xaxt = "n", las = 2)
-    lines((breakDF5[,2]),breakDF5[,4],type = "l", col = 3, lwd = 3, lty = 1)
-    grid()
-    
-    prime5E <- rev(Open_posStatEProm$rawRepCov5/Open_posStatEProm$baseFreq5prime)[1:len]
-    prime5L <- rev(Open_posStatLProm$rawRepCov5/Open_posStatLProm$baseFreq5prime)[1:len]
-    
-    breaker <- seq(0,log10(len)+1,by = .08)
-    cuter <- cut(log10(1:len),breaks = breaker )
-    agg5E <- aggregate(prime5E, list(cuter), mean)
-    agg5L <- aggregate(prime5L, list(cuter), mean)
-    breakDF5 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
-    breakDF5 <- merge(breakDF5,agg5E, by.x = 1, by.y = 1)
-    breakDF5 <- merge(breakDF5,agg5L, by.x = 1, by.y = 1)
-    
-    lines((breakDF5[,2]),(breakDF5[,3]),type = "l", col = 2, lwd = 3, lty = 3)
-    lines((breakDF5[,2]),breakDF5[,4],type = "l", col = 3, lwd = 3, lty = 3)
-    grid()
-    
-    
-    
-  ##### 3 prime side
-    
-    prime3E <- (Open_posStatENexon$rawRepCov3/Open_posStatENexon$baseFreq3prime)[1:len]
-    prime3L <- (Open_posStatLNexon$rawRepCov3/Open_posStatLNexon$baseFreq3prime)[1:len]
-    
-    breaker <- seq(0,log10(len)+1,by = .08)
-    cuter <- cut(log10(1:len),breaks = breaker )
-
-    agg3E <- aggregate(prime3E, list(cuter), mean)
-    agg3L <- aggregate(prime3L, list(cuter), mean)
-    breakDF3 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
-    breakDF3 <- merge(breakDF3,agg3E, by.x = 1, by.y = 1)
-    breakDF3 <- merge(breakDF3,agg3L, by.x = 1, by.y = 1)
-    
-    
-    plot((breakDF3[,2]),breakDF3[,3],type = "l", col = 2, xlim = c(0, log10(len)), lwd = 3, xlab = TEfam, ylab = region, ylim = c(0,.9), lty = 1, xaxt = "n", yaxt = "n")
-    lines((breakDF3[,2]),breakDF3[,4],type = "l", col = 3, lwd = 3, lty = 1)
-    grid()
-    
-    prime3E <- (Open_posStatEProm$rawRepCov3/Open_posStatEProm$baseFreq3prime)[1:len]
-    prime3L <- (Open_posStatLProm$rawRepCov3/Open_posStatLProm$baseFreq3prime)[1:len]
-    
-    breaker <- seq(0,log10(len)+1,by = .08)
-    cuter <- cut(log10(1:len),breaks = breaker )
-    
-    agg3E <- aggregate(prime3E, list(cuter), mean)
-    agg3L <- aggregate(prime3L, list(cuter), mean)
-    breakDF3 <- data.frame(level = levels(cuter), mids = breaker[1:(length(breaker) - 1)] + .015)
-    breakDF3 <- merge(breakDF3,agg3E, by.x = 1, by.y = 1)
-    breakDF3 <- merge(breakDF3,agg3L, by.x = 1, by.y = 1)
-    
-    
-    lines((breakDF3[,2]),breakDF3[,3],type = "l", col = 2, lwd = 3, lty = 3)
-    lines((breakDF3[,2]),breakDF3[,4],type = "l", col = 3, lwd = 3, lty = 3)
-    grid()
-    
-    
-dev.off()
-
 }
 
 
