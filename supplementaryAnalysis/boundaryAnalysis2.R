@@ -7,8 +7,9 @@ features <- c(0,sort(sample(x = 1:98,9,replace = FALSE)),99)/100
 RTNs <- sort(sample((0:99)[-(features*100 +1)], 18, replace = FALSE))/100
 
 
+supFigPath = "../plots/supFigs/"
 
-pdf(file = "Desktop/Domain_manuscript/writing/round2_20160503/draftsTex/supmaterial/TexFigs/supFig/boundaryAnalysis/boundaryExample.pdf",
+pdf(file = paste(supFigPath, "boundaryAnalysis/boundaryExample.pdf", sep = ""),
         height = 7, width = 6, onefile = TRUE)
 
 layout(matrix(c(1,2,3,4,5), nrow = 5), heights = c(.5,2,.7,.7,.7))
@@ -91,11 +92,6 @@ axis(side = 1,at = c(.6,.8,1), labels = c(0,NA,"20 kb"))
 
 dev.off()
 
-max()
 
-plot.new()
-axis(side = 1,at = c(,.2,.4), labels = c(0,NA,"200 kb"))
-axis(side = 1,at = c(.6,.8,1), labels = c(0,NA,"20 kb"))
-#text(.7,-.05,"kb")
 
 

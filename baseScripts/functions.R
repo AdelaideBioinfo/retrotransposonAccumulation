@@ -2495,7 +2495,7 @@ heatmap.colours <- function (x, Rowv = NULL, Colv = if (symm) "Rowv" else NULL,
     mtext(xlab, side = 1, line = margins[1L] - 1.25)
   axis(4, iy, labels = FALSE, las = 2, line = -0.5, tick = 0, 
        cex.axis = cexRow)
-  mtext(text = labRow, side = 4,line = .5,at = 1L:nc,col = RowcolsLabs[rowInd],las = 2,adj = 0)
+  mtext(text = labRow, side = 4,line = .5,at = 1L:nr,col = RowcolsLabs[rowInd],las = 2,adj = 0)
   if (!is.null(xlab)) 
     
   if (!is.null(ylab)) 

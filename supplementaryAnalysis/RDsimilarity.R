@@ -9,13 +9,13 @@
 
 
 rm(list = ls())
-setwd("~/Desktop/Domain_manuscript/")
+setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation/")
 library(GenomicRanges)
 library(rtracklayer)
 
 
-source("Domain_manuscript_scripts/functions.R")
-source("Domain_manuscript_scripts/rep_db.R")
+source("baseScripts/functions.R")
+source("baseScripts/rep_db.R")
 #load("R_objects/chromStateCombined")
 
 
@@ -23,6 +23,8 @@ genome = "hg19"
 spec1 = "Human"
 
 
+RDfilesPath = "../accesoryFiles/Data/DNN_HMM_repliDomains/"
+supFigPath = "../plots/supFigs/"
 
 
 bins <- binned.genome.reader(genome = "hg19", bin.size = c(1000), keep.rate = 0)
@@ -32,11 +34,11 @@ bins.gr <- GRanges(seqnames = Rle(bins$chr),
                    ranges = IRanges(start = bins$start, end = bins$end))
 
 
-timeFiles <- list.files(path = "Data/DNN_HMM_repliDomains/")
+timeFiles <- list.files(path = RDfilesPath)
 sampNames <- NULL
 for( i in 1:length(timeFiles)){
   name <- paste(strsplit(timeFiles[i],"_")[[1]][3],strsplit(timeFiles[i],"_")[[1]][4] , sep = "_")
-  ranges <- read.table(paste("Data/DNN_HMM_repliDomains/", timeFiles[i], sep =""))
+  ranges <- read.table(paste(RDfilesPath, timeFiles[i], sep =""))
   ranges.gr <- GRanges(seqnames = Rle(ranges[,1]),
                        ranges = IRanges(start = ranges[,2], end = ranges[,3]))
   ol <- as.matrix(findOverlaps(bins.gr, ranges.gr, type = c("within")))
@@ -141,7 +143,7 @@ sampRS <- rbind(sampRS, rowSums(sampMat))
 
 
 
-pdf(file = "writing/round2_20160503/draftsTex/supmaterial/TexFigs/supFig/replicationDomain/TTRpercentOL.pdf", 
+pdf(file = paste(supFigPath, "replicationDomain/TTRpercentOL.pdf", sep = ""), 
     height = 5, width =5)
 h1 <- hist(RS[RS > 0], breaks = seq(.5,16.5), plot = FALSE)
 h2 <- hist(sampRS[1,][sampRS[1,] > 0], breaks = seq(.5,16.5), plot = FALSE)
@@ -199,7 +201,7 @@ for(z in 1:10){
 
 
 
-pdf(file = "writing/round2_20160503/draftsTex/supmaterial/TexFigs/supFig/replicationDomain/ERDpercentOL.pdf", 
+pdf(file = paste(supFigPath, "replicationDomain/ERDpercentOL.pdf", sep = ""), 
     height = 5, width =5)
 h1 <- hist(RS[RS > 0], breaks = seq(.5,16.5), plot = FALSE)
 h2 <- hist(sampRS[1,][sampRS[1,] > 0], breaks = seq(.5,16.5), plot = FALSE)
@@ -256,7 +258,7 @@ for(z in 1:10){
 
 
 
-pdf(file = "writing/round2_20160503/draftsTex/supmaterial/TexFigs/supFig/replicationDomain/LRDpercentOL.pdf", 
+pdf(file = paste(supFigPath, "replicationDomain/LRDpercentOL.pdf", sep = ""), 
     height = 5, width =5)
 h1 <- hist(RS[RS > 0], breaks = seq(.5,16.5), plot = FALSE)
 h2 <- hist(sampRS[1,][sampRS[1,] > 0], breaks = seq(.5,16.5), plot = FALSE)

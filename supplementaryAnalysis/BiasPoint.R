@@ -3,7 +3,8 @@
 
 rm(list = ls())
 
-setwd("./Domain_manuscript/")
+setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation/")
+supFigPath = "../plots/supFigs/"
 
 # so we make a series of repeats 
 
@@ -19,7 +20,7 @@ densitiesBoundary <- c(rep(.1,10),rep(.1,10))
 
 
 for(p in 0:1){
- pdf(file = paste("writing/round2_20160503/draftsTex/supmaterial/TexFigs/supFig/biasDemonstrate/boundary",p,".pdf", sep =""))
+ pdf(file = paste(supFigPath,"biasDemonstrate/boundary",p,".pdf", sep =""))
   layout(matrix(c(4,1,2,3),nrow = 2),heights = c(2,1), widths = c(1,2))
   plot.new()
   par(mar = c(0,0,5,5))
