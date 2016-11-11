@@ -12,7 +12,7 @@ setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation
 # load PCA data from step1
 load("../accesoryFiles/R_objects/PCA_species")
 
-"path to replication timing data downloaded as per sup material"
+#path to replication timing data downloaded as per sup material
 replicationDataPath = "../accesoryFiles/Data/UW_repliSeq/"
 
 
@@ -46,11 +46,11 @@ reuben.biplot(x=ChimpPCA$x,y=ChimpPCA$rotation, cex=.2, arrow.lwd=2,text.cex = .
               ratio = .06, ylab = "", las = 1,xaxt = "n", yaxt = "n",
 #               xlab = paste(as.character(round(ChimpPCA$importance$ancient_PC, digits=2)*100), "%"),
 #               ylab = paste(as.character(round(ChimpPCA$importance$new_SINE_PC, digits=2)*100), "%"),
-x.col = "grey30"
+x.col = "grey40"
 )
-legend("topright", legend="Chimp", cex = 1, bty = "n")
-legend("bottomright", legend = c("new SINE", "new L1", "old L1", "ancient"), 
-       fill = c("aquamarine3", "purple", "red", "darkblue"), bty = "n", cex = .8)
+legend("bottomright", legend="Chimp", cex = 1.5, bty = "n")
+#legend("bottomright", legend = c("new SINE", "new L1", "old L1", "ancient"), 
+#       fill = c("aquamarine3", "purple", "red", "darkblue"), bty = "n", cex = .8)
 par(new = TRUE)
 plot(1, type = "n", xlim = c(-7,7), ylim = c(-7,7), axes = FALSE)
 axis(side = 1,c(-5,0,5))
@@ -69,9 +69,9 @@ reuben.biplot(x=RhesusPCA$x,y=RhesusPCA$rotation, cex=.2, arrow.lwd=2,text.cex =
               ratio = .06, xaxt = "n", yaxt = "n", ylab = "",
 #               xlab = paste(as.character(round(RhesusPCA$importance$ancient_PC, digits=2)*100), "%"),
 #               ylab = paste(as.character(round(RhesusPCA$importance$new_SINE_PC, digits=2)*100), "%")    
-x.col = "grey30"
+x.col = "grey40"
 )
-legend("topright", legend="Rhesus", cex = 1, bty = "n")
+legend("bottomright", legend="Rhesus", cex = 1.5, bty = "n")
 par(new = TRUE)
 plot(1, type = "n", xlim = c(-7,7), ylim = c(-7,7), axes = FALSE)
 axis(side = 1,c(-5,0,5))
@@ -88,9 +88,9 @@ reuben.biplot(x=cbind(MousePCA$x[,1],MousePCA$x[,2]) ,y=cbind(MousePCA$rotation[
               ratio = .06, xaxt = "n", yaxt = "n", ylab = "", 
 #               xlab = paste(as.character(round(MousePCA$importance$ancient_PC, digits=2)*100), "%"),
 #               ylab = paste(as.character(round(MousePCA$importance$new_SINE_PC, digits=2)*100), "%")  
-x.col = "grey30"
+x.col = "grey40"
 )
-legend("topright", legend="Mouse", cex = 1, bty = "n")
+legend("bottomright", legend="Mouse", cex = 1.5, bty = "n")
 par(new = TRUE)
 plot(1, type = "n", xlim = c(-7,7), ylim = c(-7,7), axes = FALSE)
 axis(side = 1,c(-5,0,5))
@@ -106,9 +106,9 @@ reuben.biplot(x=DogPCA$x,y=DogPCA$rotation, cex=.2, arrow.lwd=2,text.cex = .001,
               ratio = .06, xaxt = "n", yaxt = "n", ylab = "",
     #          xlab = paste(as.character(round(DogPCA$importance$ancient_PC, digits=2)*100), "%"),
      #         ylab = paste(as.character(round(DogPCA$importance$new_SINE_PC, digits=2)*100), "%")     
-    x.col = "grey30"
+    x.col = "grey40"
               )
-legend("topright", legend="Dog", cex = 1, bty = "n")
+legend("bottomright", legend="Dog", cex = 1.5, bty = "n")
 par(new = TRUE)
 plot(1, type = "n", xlim = c(-7,7), ylim = c(-7,7), axes = FALSE)
 axis(side = 1,c(-5,0,5))
@@ -153,9 +153,9 @@ reuben.biplot(x=HumanPCA$x[nos,],y=HumanPCA$rotation[nos,], cex=.2, arrow.lwd=2,
               text.col=ycol,
 #               xlab = paste(as.character(round(HumanPCA$importance$ancient_PC, digits=2)*100), "%"),
 #               ylab = paste(as.character(round(HumanPCA$importance$new_SINE_PC, digits=2)*100), "%"),
-      x.col = "grey", xlim = c(-7,7), ylim = c(-7,7),ratio = .06, xaxt = "n",yaxt = "n"
+      x.col = "grey40", xlim = c(-7,7), ylim = c(-7,7),ratio = .06, xaxt = "n",yaxt = "n"
 )
-legend("topright", legend="Human", cex = 1, bty = "n")
+legend("bottomright", legend="Human", cex = 1.5, bty = "n")
 par(new=TRUE)
 plot(1,type = "n", axes =FALSE, xlim = c(-7,7), ylim = c(-7,7))
 axis(1,c(-5,0,5))
@@ -180,7 +180,7 @@ plot(x=HumanPCA$x[nos,1],y=HumanPCA$x[nos,2], cex=.4, pch = 16, xlim=c(-7,7),yli
               ylab = paste(as.character(round(HumanPCA$importance$new_SINE_PC, digits=2)*100), "%"),
               col = f(ol.agg$x), xaxt = "n", yaxt="n"
 )
-legend("topright", legend="Replication timing", cex = 1, bty = "n")
+legend("bottomright", legend="Replication timing", cex = 1.5, bty = "n")
 axis(1,c(-5,0,5))
 axis(2,c(-5,0,5))
 
@@ -199,8 +199,8 @@ axis(side = 1, at = c(0, 1), labels = c("late", "early"), las=1)
 
 par(mar= c(2,1,1,1))
 plot.new()
-legend("center", c("old LINE","new LINE", "ancestral", "new SINE"), fill = c("red","purple", "darkblue", "aquamarine3"),horiz = F)
-legend("bottom", c("old LINE","new LINE", "ancestral", "new SINE"), fill = c("red","purple", "darkblue", "aquamarine3"),horiz = T)
+legend("center", c("new SINE","new L1", "old L1", "ancient"), fill = c("aquamarine3","purple", "red", "darkblue"),horiz = F, bty = "n")
+legend("bottom", c("new SINE","new L1", "old L1", "ancient"), fill = c("aquamarine3","purple", "red", "darkblue"),horiz = T, bty = "n")
 
 dev.off()
 
