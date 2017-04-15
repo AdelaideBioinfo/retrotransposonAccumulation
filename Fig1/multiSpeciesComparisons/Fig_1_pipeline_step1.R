@@ -27,7 +27,7 @@ options(stringsAsFactors=FALSE)
 
 # pull each species
 bin.size = 1000000
-speciesDF <- data.frame(spec = c("Human", "Dog", "Chimp", "Mouse", "Rhesus"), genome = c("hg19", "canFam3","panTro4", "mm9", "rheMac3"))
+speciesDF <- data.frame(spec = c("Human", "Dog", "Chimp", "Mouse", "Rhesus", "Cow", "Pig"), genome = c("hg19", "canFam3","panTro4", "mm9", "rheMac3", "bosTau7", "susScr2"))
 
 
 for(s in 1:(nrow(speciesDF))){
@@ -78,8 +78,10 @@ for(s in 1:nrow(speciesDF)){
   assign(paste(speciesDF$spec[s], "PCA", sep = ""), bin.ratePCA)
 }
 
+#reuben.biplot(x = PigPCA$x, y = PigPCA$rotation)
 
-# 
+# maybe we need to put genes in there and ordinate it that way
+# protein coding regions
 # reuben.biplot(x=HumanPCA$x, y = HumanPCA$rotation, x.col = 8)
 # reuben.biplot(x=DogPCA$x, y = DogPCA$rotation, x.col = 8)
 # reuben.biplot(x=ChimpPCA$x, y = ChimpPCA$rotation, x.col = 8)
@@ -100,9 +102,9 @@ save(list=objectsRep, file=paste(R_objectPath , "Rep_info_species", sep = ""))
 
 
 
+#cols <- colorRampPalette(colors = c("blue", "white", "red"))
 
-
-
+#heatmap(cor(bin.rate[,5:ncol(bin.rate)]), zlim = c(-1,1), scale = "none", col = cols(40))
 
 
 

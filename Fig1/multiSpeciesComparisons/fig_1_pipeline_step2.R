@@ -24,7 +24,7 @@ R_objectPath <- "../accesoryFiles/R_objects/"
 
 ### Our functions will only work in the correct environmnet
 referenceDF <- data.frame(spec = "Human", genome = "hg19")
-speciesDF <- data.frame(spec = c( "Dog", "Chimp", "Mouse", "Rhesus"), genome = c("canFam3","panTro4", "mm9", "rheMac3"))
+speciesDF <- data.frame(spec = c( "Cow", "Pig","Dog", "Chimp", "Mouse", "Rhesus"), genome = c("bosTau7" , "susScr2" ,"canFam3","panTro4", "mm9", "rheMac3"))
 
 # maybe write this as a function/functions? 
 

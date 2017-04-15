@@ -4,6 +4,16 @@
 # tell it which species to get the info, it will make a bunch of objects 
 # these will be available via TE.names
 
+# need to add more species 
+
+#cow 
+#elephant
+#horse
+#pig
+#rabbit
+
+
+
 
 rep_info <- function(spec1, genome){
   
@@ -98,6 +108,17 @@ rep_info <- function(spec1, genome){
     L1_Cf <- L1new[grep("L1_Cf", L1new$repName), ]
   }
   
+  if(spec1 == "Cow"){
+    BovB = rep[rep$repFamily == "RTE-BovB",]
+    BovA = rep[rep$repFamily == "BovA",]
+    tRNA_Glu = rep[rep$repFamily == "tRNA-Glu",]
+    L1_BT <- rbind(L1[grep("BT", L1$repName),], L1[grep("Art", L1$repName),])
+  }
+  if(spec1 == "Pig"){
+    PRE1 <- rep[rep$repFamily == "tRNA-Glu",]
+    L1_SS <- rbind(L1[grep("SS", L1$repName),], L1[grep("Art", L1$repName),])
+  }
+  
   
   # just get some more TE clases over the genome so we can get a more refined look at whats happening
   if(spec1 == "Human"){
@@ -115,7 +136,12 @@ rep_info <- function(spec1, genome){
   if(spec1 == "Dog"){
     TE.names <- c("SINEC_old", "SINEC_c", "SINEC_b", "SINEC_a", "SINEC_Cf", "L1ME","L1MD", "L1MC", "L1MB", "L1MA", "L1_Carn", "L1_Canid", "L1_Canis", "L1_Cf", "L2", "MIR")
   }
-  
+  if(spec1 == "Cow"){
+    TE.names <- c("tRNA_Glu", "L1ME","L1MD", "L1MC", "L1MB", "L1MA", "L1_BT", "L2", "MIR", "BovA", "BovB")
+  }
+  if(spec1 == "Pig"){
+    TE.names <- c("PRE1", "L1ME","L1MD", "L1MC", "L1MB", "L1MA", "L1_SS", "L2", "MIR")
+  }
   
   sorted.TE <- NULL
   for(i in TE.names){
@@ -154,6 +180,16 @@ repFamStruct <- function(spec1){
     repFamStruct <- data.frame(TEname = c("SINEC_old", "SINEC_c", "SINEC_b", "SINEC_a", "SINEC_Cf", "L1ME","L1MD", "L1MC", "L1MB", "L1MA", "L1_Carn", "L1_Canid", "L1_Canis", "L1_Cf", "L2", "MIR"),
                               repType = c("new_SINE", "new_SINE", "new_SINE", "new_SINE", "new_SINE", "old_LINE", "old_LINE", "old_LINE", "old_LINE", "new_LINE", "new_LINE", "new_LINE", "new_LINE", "new_LINE", "ancient", "ancient")
                               )
+  }
+  if(spec1 == "Cow"){
+    repFamStruct <- data.frame(TEname = c("tRNA_Glu", "L1ME","L1MD", "L1MC", "L1MB", "L1MA", "L1_BT", "L2", "MIR", "BovA", "BovB"),
+                               repType = c("new_SINE", "old_LINE", "old_LINE", "old_LINE", "old_LINE","new_LINE" ,"new_LINE", "ancient", "ancient", "new_SINE_RTE", "new_LINE_RTE")
+    )
+  }
+  if(spec1 == "Pig"){
+    repFamStruct <- data.frame(TEname = c("PRE1", "L1ME","L1MD", "L1MC", "L1MB", "L1MA", "L1_SS", "L2", "MIR"),
+                               repType = c("new_SINE", "old_LINE", "old_LINE", "old_LINE", "old_LINE","new_LINE" ,"new_LINE", "ancient", "ancient")
+    )
   }
   
   return(repFamStruct)

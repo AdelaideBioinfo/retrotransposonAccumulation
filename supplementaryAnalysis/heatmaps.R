@@ -16,6 +16,9 @@ ChimpCol <- c(rep("aquamarine3",3), rep("red", 4), rep("purple", 4), rep("darkbl
 RhesusCol <- c(rep("aquamarine3",3), rep("red", 4), rep("purple", 4), rep("darkblue", 2))
 MouseCol <- c(rep("aquamarine3",4), rep("red", 4), rep("purple", 6), rep("darkblue", 2))
 DogCol <- c(rep("aquamarine3",5), rep("red", 4), rep("purple", 5), rep("darkblue", 2))
+PigCol <- c(rep("aquamarine3",1), rep("red", 4), rep("purple", 2), rep("darkblue", 2))
+CowCol <- c(rep("aquamarine3",1), rep("red", 4), rep("purple", 2), rep("darkblue", 2), "brown", "black")
+
 
 
 setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation/")
@@ -61,6 +64,17 @@ reuben.heatmap(cor(HumanRef_DogQue$DogQue$data), scale = "none", col = colFun(20
                colsLabs = DogCol)
 dev.off()
 
+pdf(file = paste(supFigPath,"selfCompare/Pig.pdf", sep = ""), onefile = TRUE)
+par(mar = c(5,5,5,5))
+reuben.heatmap(cor(HumanRef_PigQue$PigQue$data), scale = "none", col = colFun(20), zlim = c(-1,1),  symm = F,
+               colsLabs = PigCol)
+dev.off()
+
+pdf(file = paste(supFigPath,"selfCompare/Cow.pdf", sep = ""), onefile = TRUE)
+par(mar = c(5,5,5,5))
+reuben.heatmap(cor(HumanRef_CowQue$CowQue$data), scale = "none", col = colFun(20), zlim = c(-1,1),  symm = F,
+               colsLabs = CowCol)
+dev.off()
 
 # we have the data we just have to do the reordering 
 
@@ -71,8 +85,8 @@ dev.off()
 
 # we will also need to compare the distributions 
 refSpec = "Human"
-for(species in 1:4){
-queSpec = c("Chimp", "Rhesus", "Mouse", "Dog")[species]
+for(species in 1:6){
+queSpec = c("Chimp", "Rhesus", "Mouse", "Dog","Pig", "Cow")[species]
 DataSet <- get(paste(refSpec, "Ref_", queSpec,"Que", sep = ""))
 
 dir.create(paste(supFigPath, refSpec,queSpec,sep=""))
@@ -169,11 +183,16 @@ dev.off()
 pdf(file = paste(supFigPath,"legends/groups.pdf", sep = ""))
 layout(1)
 plot(1,type = "n", axes = FALSE,xlab = "", ylab = "")
+legend("center", legend = c("new SINE", "new L1", "old L1", "ancient", "LINE RTE", "SINE RTE"), title = "retrotransposon\ngroups",
+       fill = c("aquamarine3", "purple", "red", "darkblue", "black", "brown"), box.lwd = -1, cex = 2,box.col = "white")
+dev.off()
+
+pdf(file = paste(supFigPath,"legends/groupsNoRTE.pdf", sep = ""))
+layout(1)
+plot(1,type = "n", axes = FALSE,xlab = "", ylab = "")
 legend("center", legend = c("new SINE", "new L1", "old L1", "ancient"), title = "retrotransposon\ngroups",
        fill = c("aquamarine3", "purple", "red", "darkblue"), box.lwd = -1, cex = 2,box.col = "white")
 dev.off()
-
-
 
 # so we got 
 # 1. raw distribution of que
@@ -221,6 +240,8 @@ pca <- prcomp(HumanRef_ChimpQue$HumanRef$data[hFragAggChimp$Group.1,], scale. = 
 par(mar=c(5,5,5,5))
 plot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
      xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Chimpanzee", bty = "n", cex = 1.5)
+
 dev.off()
 
 pdf(file = paste(supFigPath,"PCA/human/rhesus.pdf", sep = ""),width = 5,height = 5)
@@ -231,6 +252,8 @@ pca <- prcomp(HumanRef_RhesusQue$HumanRef$data[hFragAggRhesus$Group.1,], scale. 
 par(mar=c(5,5,5,5))
 plot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
      xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Rhesus Macaque", bty = "n", cex = 1.5)
+
 dev.off()
 
 pdf(file = paste(supFigPath,"PCA/human/mouse.pdf", sep = ""),width = 5,height = 5)
@@ -241,6 +264,8 @@ pca <- prcomp(HumanRef_MouseQue$HumanRef$data[hFragAggMouse$Group.1,], scale. = 
 par(mar=c(5,5,5,5))
 plot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
      xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Mouse", bty = "n", cex = 1.5)
+
 dev.off()
 
 pdf(file = paste(supFigPath,"PCA/human/dog.pdf", sep = ""),width = 5,height = 5)
@@ -251,11 +276,33 @@ pca <- prcomp(HumanRef_DogQue$HumanRef$data[hFragAggDog$Group.1,], scale. = T)
 par(mar=c(5,5,5,5))
 plot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
      xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Dog", bty = "n", cex = 1.5)
+
 dev.off()
 
+pdf(file = paste(supFigPath,"PCA/human/Pig.pdf", sep = ""),width = 5,height = 5)
+# Pig
+hFragAggPig <- aggregate(HumanRef_PigQue$binMap$refFrac, by = list(HumanRef_PigQue$binMap$refNo), sum)
+cuts <- cut(hFragAggPig$x,breaks = 20)
+pca <- prcomp(HumanRef_PigQue$HumanRef$data[hFragAggPig$Group.1,], scale. = T)
+par(mar=c(5,5,5,5))
+plot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
+     xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Pig", bty = "n", cex = 1.5)
 
+dev.off()
 
+pdf(file = paste(supFigPath,"PCA/human/Cow.pdf", sep = ""),width = 5,height = 5)
+# Cow
+hFragAggCow <- aggregate(HumanRef_CowQue$binMap$refFrac, by = list(HumanRef_CowQue$binMap$refNo), sum)
+cuts <- cut(hFragAggCow$x,breaks = 20)
+pca <- prcomp(HumanRef_CowQue$HumanRef$data[hFragAggCow$Group.1,], scale. = T)
+par(mar=c(5,5,5,5))
+plot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
+     xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Cow", bty = "n", cex = 1.5)
 
+dev.off()
 
 
 pdf(file = paste(supFigPath,"legends/legendMapping.pdf", sep = ""))
@@ -265,6 +312,8 @@ image(matrix(seq(-1,1,length.out = 20), nrow = 1), col = colFun(20), ylim = c(0,
 box(lwd = 5)
 axis(2,seq(0,1,.25),labels = FALSE,las = 2, lwd= 5)
 mtext(side = 2,at = seq(0,1,.5),text  = seq(0,.7,length.out = 3),las = 2,line = 2,cex = 2)
+legend("bottomright", legend = "Cow", bty = "n", cex = 1.5)
+
 dev.off()
 
 # start to build up the sup a bit more
@@ -282,6 +331,8 @@ par(mar=c(5,5,5,5))
 #reuben.biplot(data.frame(pca$x[,2]*1,pca$x[,1]*1), data.frame(pca$rotation[,2]*1,pca$rotation[,1]*1), x.col=colFun(20)[cuts])
 plot(data.frame(pca$x[,2]*1,pca$x[,1]*1), col = colFun(20)[cuts], pch = 16, cex = .5,
      xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Chimpanzee", bty = "n", cex = 1.5)
+
 dev.off()
 
 pdf(file = paste(supFigPath,"PCA/nonHuman/rhesus.pdf",sep = ""),width = 5,height = 5)
@@ -292,6 +343,8 @@ par(mar=c(5,5,5,5))
 #reuben.biplot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), data.frame(pca$rotation[,2]*-1,pca$rotation[,1]*-1), x.col=colFun(20)[cuts])
 plot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
      xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Rhesus Macaque", bty = "n", cex = 1.5)
+
 dev.off()
 
 pdf(file = paste(supFigPath,"PCA/nonHuman/mouse.pdf", sep = ""),width = 5,height = 5)
@@ -302,6 +355,8 @@ par(mar=c(5,5,5,5))
 #reuben.biplot(data.frame(pca$x[,2]*-1,pca$x[,1]*1), data.frame(pca$rotation[,2]*-1,pca$rotation[,1]*1), x.col=colFun(20)[cuts])
 plot(data.frame(pca$x[,2]*-1,pca$x[,1]*1), col = colFun(20)[cuts], pch = 16, cex = .5,
      xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Mouse", bty = "n", cex = 1.5)
+
 dev.off()
 
 pdf(file = paste(supFigPath,"PCA/nonHuman/dog.pdf", sep = ""),width = 5,height = 5)
@@ -312,22 +367,36 @@ par(mar=c(5,5,5,5))
 #reuben.biplot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), data.frame(pca$rotation[,2]*-1,pca$rotation[,1]*-1), x.col=colFun(20)[cuts])
 plot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
      xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Dog", bty = "n", cex = 1.5)
+
+dev.off()
+
+pdf(file = paste(supFigPath,"PCA/nonHuman/pig.pdf", sep = ""),width = 5,height = 5)
+dFragAggHuman <- aggregate(HumanRef_PigQue$binMap$queFrac, by = list(HumanRef_PigQue$binMap$queNo), sum)
+cuts <- cut(dFragAggHuman$x,breaks = seq(0,.7,length.out = 20))
+pca <- prcomp(HumanRef_PigQue$PigQue$data[dFragAggHuman$Group.1,], scale. = T)
+par(mar=c(5,5,5,5))
+#reuben.biplot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), data.frame(pca$rotation[,2]*-1,pca$rotation[,1]*-1), x.col=colFun(20)[cuts])
+plot(data.frame(pca$x[,2],pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
+     xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Pig", bty = "n", cex = 1.5)
+
 dev.off()
 
 
-
+pdf(file = paste(supFigPath,"PCA/nonHuman/cow.pdf", sep = ""),width = 5,height = 5)
+dFragAggHuman <- aggregate(HumanRef_CowQue$binMap$queFrac, by = list(HumanRef_CowQue$binMap$queNo), sum)
+cuts <- cut(dFragAggHuman$x,breaks = seq(0,.7,length.out = 20))
+pca <- prcomp(HumanRef_CowQue$CowQue$data[dFragAggHuman$Group.1,], scale. = T)
+par(mar=c(5,5,5,5))
+#reuben.biplot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), data.frame(pca$rotation[,2]*-1,pca$rotation[,1]*-1), x.col=colFun(20)[cuts])
+plot(data.frame(pca$x[,2]*-1,pca$x[,1]*-1), col = colFun(20)[cuts], pch = 16, cex = .5,
+     xlab = "Ancient PC", ylab ="new SINE PC")
+legend("bottomright", legend = "Cow", bty = "n", cex = 1.5)
+dev.off()
 ###### barplots 
 
-43076201+
-  28322032+
-  18534030+
-  15557796
 
-
-sum(34095135,
-    27706210,
-    13378123,
-    10387383)
 
 
 # repeat families from each species 
@@ -336,40 +405,71 @@ ChimpPercent <- (colSums(HumanRef_ChimpQue$ChimpQue$data)*100) /sum(HumanRef_Chi
 RhesusPercent <- (colSums(HumanRef_RhesusQue$RhesusQue$data)*100) /sum(HumanRef_RhesusQue$RhesusQue$binInfo$Known)
 MousePercent <- (colSums(HumanRef_MouseQue$MouseQue$data)*100) /sum(HumanRef_MouseQue$MouseQue$binInfo$Known)
 DogPercent <- (colSums(HumanRef_DogQue$DogQue$data)*100) /sum(HumanRef_DogQue$DogQue$binInfo$Known)
+PigPercent <- (colSums(HumanRef_PigQue$PigQue$data)*100) /sum(HumanRef_PigQue$PigQue$binInfo$Known)
+CowPercent <- (colSums(HumanRef_CowQue$CowQue$data)*100) /sum(HumanRef_CowQue$CowQue$binInfo$Known)
 
-pdf(file = paste(supFigPath,"GenomeContent/Human.pdf", sep = ""), width = 10,height = 3)
-barplot(rep(NA,length(HumanPercent)), col = HumanCol,las = 2, ylim= c(0,7),axes = F,names.arg = "")
+
+
+pdf(file = paste(supFigPath,"GenomeContent/Human.pdf", sep = ""), width = 5,height = 5)
+barplot(rep(NA,length(HumanPercent)), col = HumanCol,las = 2, ylim= c(0,15),axes = F,names.arg = "")
 grid()
-barplot(HumanPercent*100, col = HumanCol,las = 2, ylim= c(0,7), ylab = c("genome coverage (%)"),axes = F,plot = T, add = T)
-axis(side = 2,at = (0:7), labels = c(0,NA,2,NA,4,NA,6,NA))
+barplot(HumanPercent*100, col = HumanCol,las = 2, ylim= c(0,15), ylab = c("genome coverage (%)"),axes = F,plot = T, add = T)
+axis(side = 2,at = (0:15), las = 2)
+legend("top", "Human", bty = "n", cex = 1.5)
 dev.off()
 
-pdf(file = paste(supFigPath,"GenomeContent/Chimp.pdf", sep = ""), width = 10,height = 3)
-barplot(rep(NA,length(ChimpPercent)), col = HumanCol,las = 2, ylim= c(0,7),axes = F,names.arg = "")
+pdf(file = paste(supFigPath,"GenomeContent/Chimp.pdf", sep = ""), width = 5,height = 5)
+barplot(rep(NA,length(ChimpPercent)), col = HumanCol,las = 2, ylim= c(0,15),axes = F,names.arg = "")
 grid()
-barplot(ChimpPercent* 100, col = ChimpCol,las = 2, ylim= c(0,7), ylab = c("genome coverage (%)"), add = T, axes = F)
-axis(side = 2,at = (0:7), labels = c(0,NA,2,NA,4,NA,6,NA))
+barplot(ChimpPercent* 100, col = ChimpCol,las = 2, ylim= c(0,15), ylab = c("genome coverage (%)"), add = T, axes = F)
+axis(side = 2,at = (0:15), las = 2)
+legend("top", "Chimpanzee", bty = "n", cex = 1.5)
+
 dev.off()
 
-pdf(file = paste(supFigPath,"GenomeContent/Rhesus.pdf", sep = ""), width = 10,height = 3)
-barplot(rep(NA,length(RhesusPercent)), col = HumanCol,las = 2, ylim= c(0,7),axes = F,names.arg = "")
+pdf(file = paste(supFigPath,"GenomeContent/Rhesus.pdf", sep = ""), width = 5,height = 5)
+barplot(rep(NA,length(RhesusPercent)), col = HumanCol,las = 2, ylim= c(0,15),axes = F,names.arg = "")
 grid()
-barplot(RhesusPercent* 100, col = RhesusCol,las = 2, ylim= c(0,7), ylab = c("genome coverage (%)"), add = T, axes = F)
-axis(side = 2,at = (0:7), labels = c(0,NA,2,NA,4,NA,6,NA))
+barplot(RhesusPercent* 100, col = RhesusCol,las = 2, ylim= c(0,15), ylab = c("genome coverage (%)"), add = T, axes = F)
+axis(side = 2,at = (0:15), las = 2)
+legend("top", "Rhesus Macaque", bty = "n", cex = 1.5)
+
 dev.off()
 
-pdf(file = paste(supFigPath,"GenomeContent/Mouse.pdf", sep = ""), width = 10,height = 3)
-barplot(rep(NA,length(MousePercent)), col = HumanCol,las = 2, ylim= c(0,7),axes = F,names.arg = "")
+pdf(file = paste(supFigPath,"GenomeContent/Mouse.pdf", sep = ""), width = 5,height = 5)
+barplot(rep(NA,length(MousePercent)), col = HumanCol,las = 2, ylim= c(0,15),axes = F,names.arg = "")
 grid()
-barplot(MousePercent* 100, col = MouseCol,las = 2, ylim= c(0,7), ylab = c("genome coverage (%)"), add = T, axes = F)
-axis(side = 2,at = (0:7), labels = c(0,NA,2,NA,4,NA,6,NA))
+barplot(MousePercent* 100, col = MouseCol,las = 2, ylim= c(0,15), ylab = c("genome coverage (%)"), add = T, axes = F)
+axis(side = 2,at = (0:15), las = 2)
+legend("top", "Mouse", bty = "n", cex = 1.5)
+
 dev.off()
 
-pdf(file = paste(supFigPath,"GenomeContent/Dog.pdf", sep = ""), width = 10,height = 3)
-barplot(rep(NA,length(DogPercent)), col = HumanCol,las = 2, ylim= c(0,7),axes = F,names.arg = "")
+pdf(file = paste(supFigPath,"GenomeContent/Dog.pdf", sep = ""), width = 5,height = 5)
+barplot(rep(NA,length(DogPercent)), col = HumanCol,las = 2, ylim= c(0,15),axes = F,names.arg = "")
 grid()
-barplot(DogPercent * 100, col = DogCol,las = 2, ylim= c(0,7), ylab = c("genome coverage (%)"), add = T, axes = F)
-axis(side = 2,at = (0:7), labels = c(0,NA,2,NA,4,NA,6,NA))
+barplot(DogPercent * 100, col = DogCol,las = 2, ylim= c(0,15), ylab = c("genome coverage (%)"), add = T, axes = F)
+axis(side = 2,at = (0:15), las = 2)
+legend("top", "Dog", bty = "n", cex = 1.5)
+
+dev.off()
+
+pdf(file = paste(supFigPath,"GenomeContent/Pig.pdf", sep = ""), width = 5,height = 5)
+barplot(rep(NA,length(PigPercent)), col = HumanCol,las = 2, ylim= c(0,15),axes = F,names.arg = "")
+grid()
+barplot(PigPercent * 100, col = PigCol,las = 2, ylim= c(0,15), ylab = c("genome coverage (%)"), add = T, axes = F)
+axis(side = 2,at = (0:15), las = 2)
+legend("top", "Pig", bty = "n", cex = 1.5)
+
+dev.off()
+
+pdf(file = paste(supFigPath,"GenomeContent/Cow.pdf", sep = ""),width = 5,height = 5)
+barplot(rep(NA,length(CowPercent)), col = HumanCol,las = 2, ylim= c(0,15),axes = F,names.arg = "")
+grid()
+barplot(CowPercent * 100, col = CowCol,las = 2, ylim= c(0,15), ylab = c("genome coverage (%)"), add = T, axes = F)
+axis(side = 2,at = (0:15), las = 2)
+legend("top", "Cow", bty = "n", cex = 1.5)
+
 dev.off()
 
 # repeat groups from each speceis 
@@ -378,33 +478,45 @@ newSINE <- c(Human = sum(HumanPercent[HumanCol == "aquamarine3"]),
              Chimp = sum(ChimpPercent[ChimpCol == "aquamarine3"]), 
              Rhesus = sum(RhesusPercent[RhesusCol == "aquamarine3"]), 
              Mouse = sum(MousePercent[MouseCol == "aquamarine3"]), 
-             Dog = sum(DogPercent[DogCol == "aquamarine3"]))
+             Dog = sum(DogPercent[DogCol == "aquamarine3"]),
+             Pig = sum(PigPercent[PigCol == "aquamarine3"]),
+             Cow = sum(CowPercent[CowCol == "aquamarine3"])
+             )
 
 newLINE <- c(Human = sum(HumanPercent[HumanCol == "purple"]), 
              Chimp = sum(ChimpPercent[ChimpCol == "purple"]), 
              Rhesus = sum(RhesusPercent[RhesusCol == "purple"]), 
              Mouse = sum(MousePercent[MouseCol == "purple"]), 
-             Dog = sum(DogPercent[DogCol == "purple"]))
+             Dog = sum(DogPercent[DogCol == "purple"]),
+             Pig = sum(PigPercent[PigCol == "purple"]),
+             Cow = sum(CowPercent[CowCol == "purple"])
+             )
 
 oldLINE <- c(Human = sum(HumanPercent[HumanCol == "red"]), 
              Chimp = sum(ChimpPercent[ChimpCol == "red"]), 
              Rhesus = sum(RhesusPercent[RhesusCol == "red"]), 
              Mouse = sum(MousePercent[MouseCol == "red"]), 
-             Dog = sum(DogPercent[DogCol == "red"]))
+             Dog = sum(DogPercent[DogCol == "red"]),
+             Pig = sum(PigPercent[PigCol == "red"]),
+             Cow = sum(CowPercent[CowCol == "red"])
+             )
 
 ancient <- c(Human = sum(HumanPercent[HumanCol == "darkblue"]), 
              Chimp = sum(ChimpPercent[ChimpCol == "darkblue"]), 
              Rhesus = sum(RhesusPercent[RhesusCol == "darkblue"]), 
              Mouse = sum(MousePercent[MouseCol == "darkblue"]), 
-             Dog = sum(DogPercent[DogCol == "darkblue"]))
+             Dog = sum(DogPercent[DogCol == "darkblue"]),
+             Pig = sum(PigPercent[PigCol == "darkblue"]),
+             Cow = sum(CowPercent[CowCol == "darkblue"])
+             )
 
 
 pdf(file=paste(supFigPath,"GenomeContent/all.pdf", sep = ""))
-barplot(rep(NA,20), las = 2, space = c(c(rep(0.1,5),.4),  c(rep(0.1,4),.4), c(rep(0.1,4),.4), c(rep(0.1,4))), axes = F,
-        col = c(rep("aquamarine3",5), rep("purple",5), rep("red",5), rep("darkblue",5)), ylab = "", ylim = c(0,20))
+barplot(rep(NA,28), las = 2, space = c(c(rep(0.1,7),.4),  c(rep(0.1,6),.4), c(rep(0.1,6),.4), c(rep(0.1,6))), axes = F,
+        col = c(rep("aquamarine3",7), rep("purple",7), rep("red",7), rep("darkblue",7)), ylab = "", ylim = c(0,28))
 grid()
-barplot(c(newSINE,newLINE,oldLINE,ancient) *100, las = 2, space = c(c(rep(0.1,5),.4),  c(rep(0.1,4),.4), c(rep(0.1,4),.4), c(rep(0.1,4))),
-        col = c(rep("aquamarine3",5), rep("purple",5), rep("red",5), rep("darkblue",5)), ylab = "genome coverage (%)", ylim = c(0,20), add = T)
+barplot(c(newSINE,newLINE,oldLINE,ancient) *100, las = 2, space = c(c(rep(0.1,7),.4),  c(rep(0.1,6),.4), c(rep(0.1,6),.4), c(rep(0.1,6))),
+        col = c(rep("aquamarine3",7), rep("purple",7), rep("red",7), rep("darkblue",7)), ylab = "genome coverage (%)", ylim = c(0,28), add = T)
 dev.off()
 
 

@@ -32,9 +32,9 @@ library(circlize)
 
 
 
-pdf(file=paste(plotPath,plotName, sep = ""), onefile = T, height = 5,width = 5)
+pdf(file=paste(plotPath,plotName, sep = ""), onefile = T, height = 7.5,width = 5)
 
-layout(matrix(c(1,2,3,4), nrow = 2))
+layout(matrix(c(1,2,3,4,5,6), ncol = 2))
 par(mar=c(2,2,2,2))
 
 ycol <- c(rep("aquamarine3", 3), rep("red", 4), rep("purple", 4), rep("darkblue", 2))
@@ -113,6 +113,42 @@ par(new = TRUE)
 plot(1, type = "n", xlim = c(-7,7), ylim = c(-7,7), axes = FALSE)
 axis(side = 1,c(-5,0,5))
 axis(side = 2,c(-5,0,5))
+
+
+ycol <- c(rep("aquamarine3", 1), rep("red", 4), rep("purple", 2), rep("darkblue", 2))
+reuben.biplot(x=PigPCA$x,y=PigPCA$rotation, cex=.2, arrow.lwd=2,text.cex = .001,
+              y.col=ycol, 
+              text.col=ycol,
+              xlim = c(-7,7),
+              ylim = c(-7,7),
+              ratio = .06, xaxt = "n", yaxt = "n", ylab = "",
+              #          xlab = paste(as.character(round(DogPCA$importance$ancient_PC, digits=2)*100), "%"),
+              #         ylab = paste(as.character(round(DogPCA$importance$new_SINE_PC, digits=2)*100), "%")     
+              x.col = "grey40"
+)
+legend("bottomright", legend="Pig", cex = 1.5, bty = "n")
+par(new = TRUE)
+plot(1, type = "n", xlim = c(-7,7), ylim = c(-7,7), axes = FALSE)
+axis(side = 1,c(-5,0,5))
+axis(side = 2,c(-5,0,5))
+
+ycol <- c(rep("aquamarine3", 1), rep("red", 4), rep("purple", 2), rep("darkblue", 2), "brown", "black")
+reuben.biplot(x=CowPCA$x,y=CowPCA$rotation, cex=.2, arrow.lwd=2,text.cex = .001,
+              y.col=ycol, 
+              text.col=ycol,
+              xlim = c(-7,7),
+              ylim = c(-7,7),
+              ratio = .06, xaxt = "n", yaxt = "n", ylab = "",
+              #          xlab = paste(as.character(round(DogPCA$importance$ancient_PC, digits=2)*100), "%"),
+              #         ylab = paste(as.character(round(DogPCA$importance$new_SINE_PC, digits=2)*100), "%")     
+              x.col = "grey40"
+)
+legend("bottomright", legend="Cow", cex = 1.5, bty = "n")
+par(new = TRUE)
+plot(1, type = "n", xlim = c(-7,7), ylim = c(-7,7), axes = FALSE)
+axis(side = 1,c(-5,0,5))
+axis(side = 2,c(-5,0,5))
+
 
 
 dev.off()

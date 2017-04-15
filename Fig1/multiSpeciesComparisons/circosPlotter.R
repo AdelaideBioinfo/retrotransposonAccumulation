@@ -12,6 +12,7 @@ setwd("~/Desktop/retrotransposonAccumulationAnalysis/retrotransposonAccumulation
 load("../accesoryFiles/R_objects/PCA_species")
 load("../accesoryFiles/R_objects/binMaps")
 source("baseScripts/functions.R")
+source("baseScripts/rep_db.R")
 
 # replication domain path
 # rember to keep file names the same as on GEOdatabase
@@ -22,7 +23,7 @@ circosAncName = "AncDist.pdf"
 circosNewName = "newDist.pdf"
   
 referenceDF <- data.frame(spec = "Human", genome = "hg19")
-speciesDF <- data.frame(spec = c( "Dog", "Chimp", "Mouse", "Rhesus"), genome = c("canFam3","panTro4", "mm9", "rheMac3"))
+speciesDF <- data.frame(spec = c("Cow","Pig", "Dog", "Chimp", "Mouse", "Rhesus"), genome = c("bosTau7", "susScr2","canFam3","panTro4", "mm9", "rheMac3"))
 
 
 for(s in speciesDF$spec){
@@ -118,13 +119,122 @@ dev.off()
 
 
 ## pick some new colours tomorrow !!!
+## ERD and LRDs then print
+
+#### use some of the heatmap code and we can forget about over using our shitty ordination system
+
+# we need to think about how to order our species 
+# enriched to non-enriched
+
+
+refSpec = "Human"
+for(species in 1:6){
+  queSpec = c("Chimp", "Rhesus", "Mouse", "Dog", "Cow", "Pig")[species]
+  DataSet <- get(paste(refSpec, "Ref_", queSpec,"Que", sep = ""))
+
+  minFrac = .1
+
+rowChoice <- (1:nrow(DataSet$binMap))[DataSet$binMap$refFrac >= minFrac & DataSet$binMap$queFrac >= minFrac]
+aggQue <- aggregate(DataSet[[paste(queSpec, "Que", sep = "")]]$data[DataSet$binMap$queNo,][rowChoice,] * DataSet$binMap$queFrac[rowChoice], 
+                    by = list(DataSet$binMap$refNo[rowChoice]), FUN = sum)
+
+aggHuman <- aggregate(DataSet$binMap$refFrac[rowChoice] ,
+                      by = list(DataSet$binMap$refNo[rowChoice]), FUN = sum)
+
+specReMap <- aggQue[,2:ncol(aggQue)]/aggHuman$x
+
+# then give each remapped datset the proper name
+repStruct <- repFamStruct(queSpec)
+df <- DataSet$HumanRef$binInfo[aggQue$Group.1,c("chr", "start", "end")]
+for(r in unique(repStruct$repType)){
+  df <- cbind(df, rowSums(data.frame(specReMap[,repStruct$TEname[repStruct$repType == r]])))
+  }
+
+colnames(df)[4:ncol(df)] <- unique(repStruct$repType)
+
+assign(paste(queSpec,"_humanised", sep = ""), value = df)
+
+}
 
 
 
+repStruct <- repFamStruct("Human")
+df <- HumanPCA$binInfo[,c("chr", "start", "end")]
+for(r in unique(repStruct$repType)){
+  df <- cbind(df, rowSums(data.frame(HumanPCA$data[,repStruct$TEname[repStruct$repType == r]])))
+}
+colnames(df)[4:ncol(df)] <- unique(repStruct$repType)
+assign(paste("Human","_humanised", sep = ""), value = df)
+
+
+RDs <- read.table(file = paste(RDpath, "GSE53984_GSM923452_Huvec_Rep1_segments.bed", sep = ""), 
+                  col.names = c("chr", "start", "end", "value"), colClasses = c("character", "integer", "integer", "character"))
+RDs$value[RDs$value == "ERD"] = 1
+RDs$value[RDs$value == "LRD"] = -1
+RDs$value[RDs$value == "UTZ"] = NA
+RDs$value[RDs$value == "DTZ"] = NA
+RDs <- RDs[complete.cases(RDs),]    
+RDs$value <- as.numeric(RDs$value)
+RDs <- RDs[RDs$end - RDs$start + 1 >= 2000000,]
 
 
 
+specList <- c("Human", "Chimp", "Rhesus", "Mouse", "Dog", "Pig", "Cow")
 
 
+pdf(file = paste(plotPath, circosNewName, sep = ""),onefile = T)
+
+circos.initializeWithIdeogram(species = "hg19", plotType = c( "labels"))
+circos.par("track.height" = .05)
+circos.genomicTrackPlotRegion(data = RDs, bg.border = "white", panel.fun = function(region,value, ...){
+  circos.genomicRect(region,value,col = ifelse(value[[1]] > 0 , "darkorange","white"), border = NA, ...)
+})
 
 
+for(s in length(specList):1){
+  dat <- get(paste(specList[s], "humanised", sep = "_"))
+  
+  bed_new_SINE <- dat[ dat$new_SINE > sort(dat$new_SINE)[nrow(dat) * .85] ,c("chr", "start", "end")]
+  bed_new_SINE$value = 1
+  bed_new_LINE <- dat[ dat$new_LINE > sort(dat$new_LINE)[nrow(dat) * .85] ,c("chr", "start", "end")]
+  bed_new_LINE$value = -1
+  
+  bed_new <- rbind(bed_new_SINE, bed_new_LINE)
+  
+  circos.par("track.height" = .08)
+  circos.genomicTrackPlotRegion(data = bed_new, panel.fun = function(region,value, ...){
+    circos.genomicRect(region,value,col = ifelse(value[[1]] > 0, "aquamarine2", "purple"), border = NA, ...)
+  })
+  
+  
+}
+
+dev.off()
+
+pdf(file = paste(plotPath, circosAncName, sep = ""),onefile = T)
+
+circos.initializeWithIdeogram(species = "hg19", plotType = c( "labels"))
+circos.par("track.height" = .05)
+circos.genomicTrackPlotRegion(data = RDs, bg.border = "white", panel.fun = function(region,value, ...){
+  circos.genomicRect(region,value,col = ifelse(value[[1]] > 0 , "darkorange","white"), border = NA, ...)
+})
+
+
+for(s in length(specList):1){
+  dat <- get(paste(specList[s], "humanised", sep = "_"))
+  
+  bed_ancient <- dat[ dat$ancient > sort(dat$ancient)[nrow(dat) * .85] ,c("chr", "start", "end")]
+  bed_ancient$value = 1
+  bed_old_LINE <- dat[ dat$old_LINE > sort(dat$old_LINE)[nrow(dat) * .85] ,c("chr", "start", "end")]
+  bed_old_LINE$value = -1
+  
+  bed_old <- rbind(bed_ancient, bed_old_LINE)
+  
+  circos.par("track.height" = .08)
+  circos.genomicTrackPlotRegion(data = bed_old, panel.fun = function(region,value, ...){
+    circos.genomicRect(region,value,col = ifelse(value[[1]] > 0, "darkblue", "red"), border = NA, ...)
+  })
+  
+}
+
+dev.off()

@@ -222,13 +222,56 @@ layout(c(1,2))
 barplot(t(EcovTE),beside = T,space = c(0,.3), ylim = c(0,.23), 
         col = c(rep("aquamarine3",2), rep("purple", 2), rep("red", 2), rep("darkblue", 2)), 
         density = c(-1,30), xaxt = "n", las = 2)
-legend("topright", legend = c("non exon", "DNase cluster"), density= c(-1,30), bty="n")
+legend("topright", legend = c("non coding", "DNase cluster"), density= c(-1,30), bty="n")
 barplot(t(LcovTE), beside = T, ylim = c(0,.23),space = c(0,.3), 
         col = c(rep("aquamarine3",2), rep("purple", 2), rep("red", 2), rep("darkblue", 2)), 
         density = c(-1,30), las = 2)
 dev.off()
 
 
+
+pdf(file = paste(plotPathOpenChrom, "TEOLclusterSeperate.pdf", sep = ""), height = 5,width = 2.5)
+
+layout(matrix(1:10, nrow = 5, byrow = TRUE))
+par(mar=c(.5,1.5,.5,1.5), oma = c(6,5,6,5))
+
+plot.new()
+plot.new()
+barplot(c(t(EcovTE)[1,"Alu"], t(LcovTE)[1,"Alu"]),beside = T,space = c(0,.3), ylim = c(0,.3), 
+        col = c("red", "aquamarine3"), 
+         xaxt = "n", las = 2,yaxt = "n")
+axis(2,at = seq(0,.3,.05), label = c("0.0", "", "0.1", "", "0.2", "","0.3"), las = 2)
+grid(nx = 1,ny = 6)
+
+plot.new()
+
+
+barplot(c(t(EcovTE)[1,"new_L1"], t(LcovTE)[1,"new_L1"]),beside = T,space = c(0,.2), ylim = c(0,.2), 
+        col = c("red", "aquamarine3"), 
+        xaxt = "n", las = 2,yaxt = "n", bty = "7")
+axis(2,at = seq(0,.3,.05), label = c("0.0", "", "0.1", "", "0.2", "","0.3"), las = 2)
+grid(nx = 1,ny = 4)
+
+plot.new()
+
+
+barplot(c(t(EcovTE)[1,"old_L1"], t(LcovTE)[1,"old_L1"]),beside = T,space = c(0,.3), ylim = c(0,.15), 
+        col = c("red", "aquamarine3"), 
+        xaxt = "n", las = 2,yaxt = "n")
+axis(2,at = seq(0,.3,.05), label = c("0.0", "", "0.1", "", "0.2", "","0.3"), las = 2)
+grid(nx = 1,ny = 3)
+
+plot.new()
+
+barplot(c(t(EcovTE)[1,"Ancient"], t(LcovTE)[1,"Ancient"]),beside = T,space = c(0,.3), ylim = c(0,.15), 
+        col = c("red", "aquamarine3"), 
+        xaxt = "n", las = 2,yaxt = "n")
+axis(2,at = seq(0,.3,.05), label = c("0.0", "", "0.1", "", "0.2", "","0.3"), las = 2)
+grid(nx = 1,ny = 3)
+
+plot.new()
+
+dev.off()
 
 
 # choose TE here
