@@ -30,8 +30,8 @@ for(s in 1:length(spec1)){
   repGroupName<- unique(repGroup$repType)
   
   if(length(unique(repGroup$repType)) == 4){
-    pdf(file = paste("../plots/supFigs/mismatch/",spec1[s],"RepDist.pdf", sep = ""), onefile = T, height = 10, width = 10)
-    layout(matrix(1:6, ncol = 2), byrow = TRUE)
+    pdf(file = paste("../plots/supFigs/mismatch/",spec1[s],"RepDist.pdf", sep = ""), onefile = T, height = 10, width = 6)
+    layout(matrix(1:6, ncol = 2, byrow = TRUE))
     par(oma = c(0,0,5,0), c(7,5,0,5))
   } else if(length(unique(repGroup$repType)) == 6){
     pdf(file = paste("../plots/supFigs/mismatch/",spec1[s],"RepDist.pdf", sep = ""), onefile = T, height = 10, width = 6)
@@ -42,6 +42,7 @@ for(s in 1:length(spec1)){
   for(i in 1:length(repGroupName)){
     teFams <- as.character(repGroup$TEname[repGroup$repType == repGroupName[i]])
     plot(c(0,50), c(0,1), type = "n", main = repGroupName[i], xlab = "percentage mismatch", ylab = "cumulative distribution")
+    grid()
     legend("bottomright", legend = teFams, fill = 1:length(teFams), cex = .7)
     for(te in 1:length(teFams)){
       print(teFams[te])

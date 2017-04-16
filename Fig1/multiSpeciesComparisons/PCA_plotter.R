@@ -157,7 +157,7 @@ dev.off()
 
 
 
-
+## plots the human replication timing for a single sample
 
 A <- HumanPCA$binInfo
 nos <- (1:nrow(A))[A$chr != "chrY"]
@@ -221,6 +221,80 @@ axis(1,c(-5,0,5))
 axis(2,c(-5,0,5))
 
 dev.off()
+
+
+##### plot the mouse replication timing for a single sample
+
+
+A <- MousePCA$binInfo
+nos <- (1:nrow(A))[A$chr != "chrY"]
+
+
+which <- GRanges(seqnames=Rle(MousePCA$binInfo$chr[nos]), 
+                 ranges=IRanges(start = MousePCA$binInfo$start[nos], end = MousePCA$binInfo$end[nos])
+)
+repliTime1 <- import(paste("../accesoryFiles/Data/mm9_RepliChip/wgEncodeFsuRepliChipEpisc5MWaveSignalRep1.bigWig", sep = ""), format = "bigWig", which = which)
+repliTime2 <- import(paste("../accesoryFiles/Data/mm9_RepliChip/wgEncodeFsuRepliChipEpisc5MWaveSignalRep2.bigWig", sep = ""), format = "bigWig", which = which)
+repliTime <- repliTime1
+score(repliTime) = rowMeans(data.frame(score(repliTime1), score(repliTime2)))
+
+ol <- as.matrix(findOverlaps(which, repliTime))
+ol.agg <- aggregate(x = elementMetadata(repliTime)$score[ol[,2]], by = list(ol[,1]), FUN=mean)
+ol.agg$x <- scale(ol.agg$x)
+
+
+f = colorRamp2(breaks = c(-2,0,2), colors = c("blue4", "white", "green4"))
+ycol <- c(rep("aquamarine3", 4), rep("red", 4), rep("purple", 6), rep("darkblue", 2))
+
+
+pdf(file = paste(plotPath,plotNameReplicationTiming,"_Mouse.pdf", sep = ""), onefile = T, width = 5, height = 5)
+
+layout(matrix(c(1,2,3,4), nrow = 2))
+par(mar=c(2,2,2,2))
+
+
+reuben.biplot(x=MousePCA$x[nos,],y=MousePCA$rotation[nos,], cex=.2, arrow.lwd=2, text.cex = 0.001,
+              y.col=ycol, 
+              text.col=ycol,
+              #               xlab = paste(as.character(round(HumanPCA$importance$ancient_PC, digits=2)*100), "%"),
+              #               ylab = paste(as.character(round(HumanPCA$importance$new_SINE_PC, digits=2)*100), "%"),
+              x.col = "grey40", xlim = c(-7,7), ylim = c(-7,7),ratio = .06, xaxt = "n",yaxt = "n"
+)
+legend("bottomright", legend="Mouse", cex = 1.5, bty = "n")
+par(new=TRUE)
+plot(1,type = "n", axes =FALSE, xlim = c(-7,7), ylim = c(-7,7))
+axis(1,c(-5,0,5))
+axis(2,c(-5,0,5))
+
+
+
+x=MousePCA$x[nos,]
+y=MousePCA$rotation[nos,]
+unsigned.range <- function(x) c(-abs(min(x, na.rm = TRUE)), 
+                                abs(max(x, na.rm = TRUE)))
+rangx1 <- unsigned.range(x[, 1L])
+rangx2 <- unsigned.range(x[, 2L])
+rangy1 <- unsigned.range(y[, 1L])
+rangy2 <- unsigned.range(y[, 2L])
+xlim <- ylim <- rangx1 <- rangx2 <- range(rangx1, rangx2)
+
+plot.new()
+
+plot(x=MousePCA$x[nos,1],y=MousePCA$x[nos,2], cex=.4, pch = 16, xlim=c(-7,7),ylim=c(-7,7),
+     xlab = paste(as.character(round(MousePCA$importance$ancient_PC, digits=2)*100), "%"),
+     ylab = paste(as.character(round(MousePCA$importance$new_SINE_PC, digits=2)*100), "%"),
+     col = f(ol.agg$x), xaxt = "n", yaxt="n"
+)
+legend("bottomright", legend="Replication timing", cex = 1.5, bty = "n")
+axis(1,c(-5,0,5))
+axis(2,c(-5,0,5))
+
+dev.off()
+
+
+
+
+
 
 
 
